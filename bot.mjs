@@ -15,14 +15,10 @@ async function postNowPlaying(track) {
     const artistName = cleanArtistName(artist['#text']);
     const trackName = name;
 
-    let details = await getSpotifyDetails(artistName, trackName);
-    if (!details) {
-        console.log('Could not fetch details from Spotify, trying YouTube Music...');
-        details = await getYouTubeMusicDetails(artistName, trackName);
-    }
+    let details = await getSpotifyDetails(artistName, trackName) || await getYouTubeMusicDetails(artistName, trackName);
 
     if (!details) {
-        console.error('Could not fetch details from both Spotify and YouTube Music');
+        console.error('Could not fetch details from Spotify or YouTube Music');
         return;
     }
 
