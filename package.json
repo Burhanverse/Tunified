@@ -3,7 +3,6 @@
   "dependencies": {
     "dotenv": "^16.4.5",
     "formidable": "^3.5.1",
-    "googleapis": "^140.0.1",
     "node-fetch": "^3.3.2",
     "spotify-web-api-node": "^5.0.2",
     "superagent": "^9.0.2",
