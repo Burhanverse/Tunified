@@ -27,11 +27,12 @@ function cleanArtistName(artist) {
 }
 
 function createText({ trackName, artistName, albumName, releaseDate }) {
-    return `🎵 **Aqua is Listening to:**\n\n` +
-           `**Song:** ${trackName}\n` +
-           `**Artist:** ${artistName}\n` +
-           `**Album:** ${albumName}\n` +
-           `**Release Date:** ${releaseDate}`;
+    return `🎵 **𝘼𝙦𝙪𝙖 𝙞𝙨 𝙇𝙞𝙨𝙩𝙚𝙣𝙞𝙣𝙜 𝙩𝙤:**\n\n` +
+           `**𝙎𝙤𝙣𝙜:** ${trackName}\n` +
+           `**𝘼𝙧𝙩𝙞𝙨𝙩 :** ${artistName}\n` +
+           `**𝘼𝙡𝙗𝙪𝙢:** ${albumName}\n` +
+           `**𝙍𝙚𝙡𝙚𝙖𝙨𝙚 𝘿𝙖𝙩𝙚 :** ${releaseDate}\n` +
+           `**𝙇𝙖𝙨𝙩.𝙁𝙈 𝙋𝙧𝙤𝙛𝙞𝙡𝙚:** [${lastfmUser}](https://www.last.fm/user/${encodeURIComponent(lastfmUser)})`;
 }
 
 function getReplyMarkup({ id, artistName }) {

@@ -7,6 +7,7 @@
     "node-fetch": "^3.3.2",
     "spotify-web-api-node": "^5.0.2",
     "superagent": "^9.0.2",
-    "telegraf": "^4.16.3"
+    "telegraf": "^4.16.3",
+    "ytdl-core": "^4.11.5"
   }
 }
