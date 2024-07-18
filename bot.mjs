@@ -1,14 +1,41 @@
 import { Telegraf } from 'telegraf';
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { fetchNowPlaying, cleanArtistName, createText, getReplyMarkup } from './src/utils.mjs';
 import { getSpotifyDetails } from './src/spotify.mjs';
 import { getYouTubeMusicDetails } from './src/youtube.mjs';
 
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const channelId = process.env.TELEGRAM_CHANNEL_ID;
+const lastMessageIdFile = path.resolve(__dirname, 'lastMessageId.txt');
+
 let lastPostedMessageId = null;
+
+function readLastPostedMessageId() {
+    try {
+        if (fs.existsSync(lastMessageIdFile)) {
+            const data = fs.readFileSync(lastMessageIdFile, 'utf-8');
+            lastPostedMessageId = data ? parseInt(data) : null;
+        }
+    } catch (error) {
+        console.error('Error reading last posted message ID:', error);
+    }
+}
+
+function writeLastPostedMessageId(messageId) {
+    try {
+        fs.writeFileSync(lastMessageIdFile, messageId.toString());
+    } catch (error) {
+        console.error('Error writing last posted message ID:', error);
+    }
+}
 
 async function postNowPlaying(track) {
     const { artist, name } = track;
@@ -50,6 +77,7 @@ async function postNowPlaying(track) {
             );
 
             lastPostedMessageId = message.message_id;
+            writeLastPostedMessageId(lastPostedMessageId);
         }
     } catch (error) {
         console.error('Error posting or updating to Telegram:', error);
@@ -68,6 +96,10 @@ async function checkAndPostNowPlaying() {
     }
 }
 
-setInterval(checkAndPostNowPlaying, 5000);
+async function initialize() {
+    readLastPostedMessageId();
+    setInterval(checkAndPostNowPlaying, 5000);
+}
 
+initialize();
 bot.launch();
