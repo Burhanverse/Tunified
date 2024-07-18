@@ -12,11 +12,13 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const lastfmUser = process.env.LASTFM_USER;
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const channelId = process.env.TELEGRAM_CHANNEL_ID;
 const lastMessageIdFile = path.resolve(__dirname, 'lastMessageId.txt');
 
 let lastPostedMessageId = null;
+let lastListenedTime = null; // Declare lastListenedTime globally
 
 function readLastPostedMessageId() {
     try {
@@ -52,7 +54,11 @@ async function postNowPlaying(track) {
     const { spotifyLink, youtubeMusicLink, albumCover, albumName, releaseDate, id, artistLink } = details;
 
     const text = createText({ trackName, artistName, albumName, releaseDate });
-    const extra = getReplyMarkup({ id, artistName });
+
+    // Add last listened time if it's a new track
+    if (lastPostedMessageId === null) {
+        lastListenedTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }); // Indian time
+    }
 
     try {
         if (lastPostedMessageId) {
@@ -63,22 +69,25 @@ async function postNowPlaying(track) {
                 {
                     type: 'photo',
                     media: albumCover,
-                    caption: text,
-                    parse_mode: 'Markdown'
+                    caption: `${text}\n<b>𝙇𝙖𝙨𝙩 𝙇𝙞𝙨𝙩𝙚𝙣𝙚𝙙:</b> ${lastListenedTime}\n<b>𝙇𝙖𝙨𝙩.𝙁𝙈 𝙋𝙧𝙤𝙛𝙞𝙡𝙚:</b> <a href="https://www.last.fm/user/${encodeURIComponent(lastfmUser)}">${lastfmUser}</a>`,
+                    parse_mode: 'HTML'
                 },
-                extra
+                getReplyMarkup({ id, artistName })
             );
         } else {
             const message = await bot.telegram.sendPhoto(channelId, albumCover, {
-                caption: text,
+                caption: `${text}\n\n𝙇𝙖𝙨𝙩 𝙇𝙞𝙨𝙩𝙚𝙣𝙚𝙙: ${lastListenedTime}`, // Include last listened time
                 parse_mode: 'Markdown'
             },
-            extra
+            getReplyMarkup({ id, artistName })
             );
 
             lastPostedMessageId = message.message_id;
             writeLastPostedMessageId(lastPostedMessageId);
         }
+
+        // Update last listened time
+        lastListenedTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }); // Indian time
     } catch (error) {
         console.error('Error posting or updating to Telegram:', error);
     }
