@@ -18,13 +18,13 @@ const channelId = process.env.TELEGRAM_CHANNEL_ID;
 const lastMessageIdFile = path.resolve(__dirname, 'lastMessageId.txt');
 
 let lastPostedMessageId = null;
-let lastListenedTime = null; // Declare lastListenedTime globally
+let lastListenedTime = null;
 
 function readLastPostedMessageId() {
     try {
         if (fs.existsSync(lastMessageIdFile)) {
             const data = fs.readFileSync(lastMessageIdFile, 'utf-8');
-            lastPostedMessageId = data ? parseInt(data) : null;
+            lastPostedMessageId = data ? parseInt(data, 10) : null;
         }
     } catch (error) {
         console.error('Error reading last posted message ID:', error);
@@ -55,11 +55,6 @@ async function postNowPlaying(track) {
 
     const text = createText({ trackName, artistName, albumName, releaseDate });
 
-    // Add last listened time if it's a new track
-    if (lastPostedMessageId === null) {
-        lastListenedTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }); // Indian time
-    }
-
     try {
         if (lastPostedMessageId) {
             await bot.telegram.editMessageMedia(
@@ -76,18 +71,16 @@ async function postNowPlaying(track) {
             );
         } else {
             const message = await bot.telegram.sendPhoto(channelId, albumCover, {
-                caption: `${text}\n\n𝙇𝙖𝙨𝙩 𝙇𝙞𝙨𝙩𝙚𝙣𝙚𝙙: ${lastListenedTime}`, // Include last listened time
-                parse_mode: 'Markdown'
-            },
-            getReplyMarkup({ id, artistName })
-            );
+                caption: `${text}\n\n<b>𝙇𝙖𝙨𝙩 𝙇𝙞𝙨𝙩𝙚𝙣𝙚𝙙:</b> ${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}\n<b>𝙇𝙖𝙨𝙩.𝙁𝙈 𝙋𝙧𝙤𝙛𝙞𝙡𝙚:</b> <a href="https://www.last.fm/user/${encodeURIComponent(lastfmUser)}">${lastfmUser}</a>`,
+                parse_mode: 'HTML'
+            }, getReplyMarkup({ id, artistName }));
 
             lastPostedMessageId = message.message_id;
             writeLastPostedMessageId(lastPostedMessageId);
         }
 
         // Update last listened time
-        lastListenedTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' }); // Indian time
+        lastListenedTime = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
     } catch (error) {
         console.error('Error posting or updating to Telegram:', error);
     }
@@ -107,6 +100,9 @@ async function checkAndPostNowPlaying() {
 
 async function initialize() {
     readLastPostedMessageId();
+    if (!lastPostedMessageId) {
+        console.log("No previous message ID found. A new message will be posted.");
+    }
     setInterval(checkAndPostNowPlaying, 5000);
 }
 
