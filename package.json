@@ -1,12 +1,28 @@
 {
-  "type": "module",
+  "name": "tunified",
+  "version": "1.0.0",
+  "description": "lastfm now playing bot for telegram",
+  "main": "bot.mjs",
+  "scripts": {
+    "test": "node bot.mjs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Burhanverse/Tunified.git"
+  },
+  "author": "Burhanverse",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Burhanverse/Tunified/issues"
+  },
+  "homepage": "https://github.com/Burhanverse/Tunified#readme",
   "dependencies": {
+    "@distube/ytdl-core": "^4.13.7",
     "dotenv": "^16.4.5",
     "formidable": "^3.5.1",
     "node-fetch": "^3.3.2",
     "spotify-web-api-node": "^5.0.2",
     "superagent": "^9.0.2",
-    "telegraf": "^4.16.3",
-    "ytdl-core": "^4.11.5"
+    "telegraf": "^4.16.3"
   }
 }
