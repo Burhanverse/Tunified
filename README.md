@@ -62,6 +62,12 @@ A Telegram bot that fetches the currently playing song from Last.fm and posts de
 
 9\.Start the bot:
 ```bash
+    node init.mjs
+```
+- Updates to latest source from github, clean installs module as speciefied in package-lock.json and then starts the bot.
+
+OR for normal startup of the bot,
+```bash
     node bot.mjs
 ```
 
