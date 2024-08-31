@@ -6,14 +6,35 @@ dotenv.config();
 const lastfmApiKey = process.env.LASTFM_API_KEY;
 const lastfmUser = process.env.LASTFM_USER;
 
+let lastPlayed = null;
+
 async function fetchNowPlaying() {
     try {
         const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${lastfmUser}&api_key=${lastfmApiKey}&format=json`);
         const data = await response.json();
-        const nowPlaying = data.recenttracks.track[0];
 
-        if (nowPlaying['@attr'] && nowPlaying['@attr'].nowplaying === 'true') {
-            return nowPlaying;
+        const nowPlayingTrack = data.recenttracks.track[0];
+        if (nowPlayingTrack && nowPlayingTrack['@attr'] && nowPlayingTrack['@attr'].nowplaying === 'true') {
+            const trackName = nowPlayingTrack.name;
+            const artistName = nowPlayingTrack.artist['#text'];
+            const albumName = nowPlayingTrack.album['#text'] || 'Unknown Album';
+            const trackMbid = nowPlayingTrack.mbid || null;
+            const status = nowPlayingTrack ? 'Playing' : 'Paused';
+
+            const trackInfoResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${lastfmApiKey}&artist=${encodeURIComponent(artistName)}&track=${encodeURIComponent(trackName)}&username=${lastfmUser}&format=json`);
+            const trackInfoData = await trackInfoResponse.json();
+
+            const playCount = trackInfoData.track.userplaycount || 'N/A';
+			const lastPlayed = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+            
+            return {
+                trackName,
+                artistName,
+                albumName,
+                playCount,
+                lastPlayed,
+                status
+            };
         }
     } catch (error) {
         console.error('Error fetching now playing from Last.fm:', error);
@@ -26,12 +47,16 @@ function cleanArtistName(artist) {
     return artist.split(/,|&/)[0].trim();
 }
 
-function createText({ trackName, artistName, albumName, releaseDate, }) {
+function createText({ trackName, artistName, albumName, playCount, lastPlayed, status }) {
     return `<b>𝘼𝙦𝙪𝙖 𝙞𝙨 𝙇𝙞𝙨𝙩𝙚𝙣𝙞𝙣𝙜 𝙩𝙤:</b>\n\n` +
            `<b>𝙎𝙤𝙣𝙜:</b> ${trackName}\n` +
            `<b>𝘼𝙧𝙩𝙞𝙨𝙩:</b> ${artistName}\n` +
            `<b>𝘼𝙡𝙗𝙪𝙢:</b> ${albumName}\n` +
-           `<b>𝙍𝙚𝙡𝙚𝙖𝙨𝙚 𝘿𝙖𝙩𝙚:</b> ${releaseDate}`;
+           `<b>𝙎𝙩𝙖𝙩𝙪𝙨:</b> ${status}\n` +
+           `<b>𝙋𝙡𝙖𝙮 𝘾𝙤𝙪𝙣𝙩:</b> ${playCount}\n` +
+           `<b>𝙇𝙖𝙨𝙩 𝙋𝙡𝙖𝙮𝙚𝙙:</b> ${lastPlayed}\n` +
+           `<b>𝙇𝙖𝙨𝙩.𝙁𝙈 𝙋𝙧𝙤𝙛𝙞𝙡𝙚:</b> <a href="https://www.last.fm/user/${encodeURIComponent(lastfmUser)}">${lastfmUser}</a>`;
+
 }
 
 function getReplyMarkup({ id, artistName }) {
