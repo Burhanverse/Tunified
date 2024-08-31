@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { fetchNowPlaying, cleanArtistName, createText, getReplyMarkup } from './src/utils.mjs';
+import { fetchNowPlaying, createText, getReplyMarkup } from './src/utils.mjs';
 import { getSpotifyDetails } from './src/spotify.mjs';
 import { getYouTubeMusicDetails } from './src/youtube.mjs';
 
@@ -11,8 +11,6 @@ dotenv.config();
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-const lastfmUser = process.env.LASTFM_USER;
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 const channelId = process.env.TELEGRAM_CHANNEL_ID;
 const lastMessageIdFile = path.resolve(__dirname, 'lastMessageId.txt');
@@ -48,7 +46,7 @@ async function postNowPlaying(track) {
         return;
     }
 
-    const { spotifyLink, youtubeMusicLink, albumCover, releaseDate, id } = details;
+    const {albumCover, id } = details;
 
     const text = createText({ trackName, artistName, albumName, playCount, lastPlayed, status });
 

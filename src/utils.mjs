@@ -50,10 +50,6 @@ async function fetchNowPlaying() {
     return null;
 }
 
-function cleanArtistName(artist) {
-    return artist.split(/,|&/)[0].trim();
-}
-
 function createText({trackName, artistName, albumName, playCount, lastPlayed, status }) {
     return `<b>${tgUser} 𝙞𝙨 𝙇𝙞𝙨𝙩𝙚𝙣𝙞𝙣𝙜 𝙩𝙤:</b>\n\n` +
            `<b>𝙎𝙤𝙣𝙜:</b> ${trackName}\n` +
@@ -66,7 +62,6 @@ function createText({trackName, artistName, albumName, playCount, lastPlayed, st
 }
 
 function getReplyMarkup({ id, artistName }) {
-    const artist = artistName.split(",")[0];
     const googleSearchLink = `https://www.google.com/search?q=${encodeURIComponent(artistName + ' artist bio')}`;
     return Markup.inlineKeyboard([
         [
@@ -75,7 +70,7 @@ function getReplyMarkup({ id, artistName }) {
                 url: `https://song.link/s/${id}`,
             },
             {
-                text: `About ${artist}`,
+                text: `About Artist`,
                 url: googleSearchLink,
             },
         ],
@@ -88,4 +83,4 @@ function getReplyMarkup({ id, artistName }) {
     ]);
 }
 
-export { fetchNowPlaying, cleanArtistName, createText, getReplyMarkup };
+export { fetchNowPlaying, createText, getReplyMarkup };
