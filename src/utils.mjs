@@ -5,6 +5,7 @@ dotenv.config();
 
 const lastfmApiKey = process.env.LASTFM_API_KEY;
 const lastfmUser = process.env.LASTFM_USER;
+const tgUser = process.env.TELEGRAM_USER;
 
 let lastPlayed = null;
 
@@ -53,8 +54,8 @@ function cleanArtistName(artist) {
     return artist.split(/,|&/)[0].trim();
 }
 
-function createText({ trackName, artistName, albumName, playCount, lastPlayed, status }) {
-    return `<b>𝘼𝙦𝙪𝙖 𝙞𝙨 𝙇𝙞𝙨𝙩𝙚𝙣𝙞𝙣𝙜 𝙩𝙤:</b>\n\n` +
+function createText({trackName, artistName, albumName, playCount, lastPlayed, status }) {
+    return `<b>${tgUser} 𝙞𝙨 𝙇𝙞𝙨𝙩𝙚𝙣𝙞𝙣𝙜 𝙩𝙤:</b>\n\n` +
            `<b>𝙎𝙤𝙣𝙜:</b> ${trackName}\n` +
            `<b>𝘼𝙧𝙩𝙞𝙨𝙩:</b> ${artistName}\n` +
            `<b>𝘼𝙡𝙗𝙪𝙢:</b> ${albumName}\n` +

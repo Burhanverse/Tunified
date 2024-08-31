@@ -40,17 +40,18 @@ A Telegram bot that fetches the currently playing song from Last.fm and posts de
 ```
 3\. Install dependencies:
 ```bash
-    npm i
+    npm install
 ```
 4\. Create a `.env` file in the root directory and add the following environment variables:
 ```env
-    LASTFM_API_KEY=
-    LASTFM_SHARED_SECRET=
-    LASTFM_USER=
-    TELEGRAM_BOT_TOKEN=
-    TELEGRAM_CHANNEL_ID=
-    SPOTIFY_CLIENT_ID=
-    SPOTIFY_CLIENT_SECRET=
+LASTFM_API_KEY=
+LASTFM_SHARED_SECRET=
+LASTFM_USER=
+TELEGRAM_USER=
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHANNEL_ID=
+SPOTIFY_CLIENT_ID=
+SPOTIFY_CLIENT_SECRET=
 ```
 5\. Get your Last.FM API KEY & SHARED SECERT from [here](https://www.last.fm/api/account/create) remember to login with the same account you use for scrobbling tracks as this will serve as the main source for the bot to display the current playing track data.
 
@@ -60,9 +61,11 @@ A Telegram bot that fetches the currently playing song from Last.fm and posts de
 
 8\. Go to [this link](https://developer.spotify.com/dashboard/applications) (login if required) to get your `SPOTIFY_CLIENT_ID` & `SPOTIFY_CLIENT_SECRET`. In your "Dashboard" click on "CREATE AN APP". Enter any name and description of the application. Now ,in the Redirect URIs field enter `https://example.com/` , check all the boxes down below and → click "CREATE AN APP". Now copy the ID and SECERT and put it in the `.env` file.
 
-9\.Start the bot:
+9\. `TELEGRAM_USER` is your first name on Telegram.
+
+10\.Start the bot:
 ```bash
-    node init.mjs
+    npm start
 ```
 - Updates to latest source from github, clean installs module as speciefied in package-lock.json and then starts the bot.
 
