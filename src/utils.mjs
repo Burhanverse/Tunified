@@ -13,20 +13,26 @@ async function fetchNowPlaying() {
         const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${lastfmUser}&api_key=${lastfmApiKey}&format=json`);
         const data = await response.json();
 
-        const nowPlayingTrack = data.recenttracks.track[0];
-        if (nowPlayingTrack && nowPlayingTrack['@attr'] && nowPlayingTrack['@attr'].nowplaying === 'true') {
-            const trackName = nowPlayingTrack.name;
-            const artistName = nowPlayingTrack.artist['#text'];
-            const albumName = nowPlayingTrack.album['#text'] || 'Unknown Album';
-            const trackMbid = nowPlayingTrack.mbid || null;
-            const status = nowPlayingTrack ? 'Playing' : 'Paused';
+        const recentTrack = data.recenttracks.track[0];
+
+        const isPlaying = recentTrack['@attr'] && recentTrack['@attr'].nowplaying === 'true';
+        const status = isPlaying ? 'Playing' : 'Paused';
+
+        if (recentTrack) {
+            const trackName = recentTrack.name;
+            const artistName = recentTrack.artist['#text'];
+            const albumName = recentTrack.album['#text'] || 'Unknown Album';
+            const trackMbid = recentTrack.mbid || null;
 
             const trackInfoResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${lastfmApiKey}&artist=${encodeURIComponent(artistName)}&track=${encodeURIComponent(trackName)}&username=${lastfmUser}&format=json`);
             const trackInfoData = await trackInfoResponse.json();
 
             const playCount = trackInfoData.track.userplaycount || 'N/A';
-			const lastPlayed = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-            
+
+            if (isPlaying) {
+                lastPlayed = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
+            }
+
             return {
                 trackName,
                 artistName,
@@ -54,9 +60,8 @@ function createText({ trackName, artistName, albumName, playCount, lastPlayed, s
            `<b>𝘼𝙡𝙗𝙪𝙢:</b> ${albumName}\n` +
            `<b>𝙎𝙩𝙖𝙩𝙪𝙨:</b> ${status}\n` +
            `<b>𝙋𝙡𝙖𝙮 𝘾𝙤𝙪𝙣𝙩:</b> ${playCount}\n` +
-           `<b>𝙇𝙖𝙨𝙩 𝙋𝙡𝙖𝙮𝙚𝙙:</b> ${lastPlayed}\n` +
+           `<b>𝙇𝙖𝙨𝙩 𝙋𝙡𝙖𝙮𝙚𝙙:</b> ${lastPlayed || 'N/A'}\n` +
            `<b>𝙇𝙖𝙨𝙩.𝙁𝙈 𝙋𝙧𝙤𝙛𝙞𝙡𝙚:</b> <a href="https://www.last.fm/user/${encodeURIComponent(lastfmUser)}">${lastfmUser}</a>`;
-
 }
 
 function getReplyMarkup({ id, artistName }) {
