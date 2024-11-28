@@ -1,102 +1,127 @@
 import { Telegraf } from 'telegraf';
 import dotenv from 'dotenv';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
-import { fetchNowPlaying, createText, getReplyMarkup } from './src/utils.mjs';
+import { initializeDatabase, saveUserData, getUserData, fetchNowPlaying, createText, getReplyMarkup } from './src/utils.mjs';
 import { getSpotifyDetails } from './src/spotify.mjs';
 import { getYouTubeMusicDetails } from './src/youtube.mjs';
 
 dotenv.config();
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-const channelId = process.env.TELEGRAM_CHANNEL_ID;
-const lastMessageIdFile = path.resolve(__dirname, 'lastMessageId.txt');
+console.log('Bot token:', process.env.TELEGRAM_BOT_TOKEN);
 
-let lastPostedMessageId = null;
+// Initialize MongoDB and create necessary collections
+await initializeDatabase();
 
-function readLastPostedMessageId() {
-    try {
-        if (fs.existsSync(lastMessageIdFile)) {
-            const data = fs.readFileSync(lastMessageIdFile, 'utf-8');
-            lastPostedMessageId = data ? parseInt(data, 10) : null;
-        }
-    } catch (error) {
-        console.error('Error reading last posted message ID:', error);
-    }
-}
+// Enable graceful stop
+process.once('SIGINT', () => bot.stop('SIGINT'));
+process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
-function writeLastPostedMessageId(messageId) {
-    try {
-        fs.writeFileSync(lastMessageIdFile, messageId.toString());
-    } catch (error) {
-        console.error('Error writing last posted message ID:', error);
-    }
-}
+// Command to set the user's name
+bot.command('setname', async (ctx) => {
+    const value = ctx.message.text.split(' ').slice(1).join(' ');
+    const userId = ctx.from.id.toString();
+    console.log('Received /setname command from user:', userId);
 
-async function postNowPlaying(track) {
-    const { artistName, trackName, albumName, playCount, lastPlayed, status } = track;
-
-    let details = await getSpotifyDetails(artistName, trackName) || await getYouTubeMusicDetails(artistName, trackName);
-
-    if (!details) {
-        console.error('Could not fetch details from Spotify or YouTube Music');
-        return;
+    if (!value) {
+        return ctx.reply("Please provide a name using `/setname [your name]`.");
     }
 
-    const {albumCover, id } = details;
+    console.log('Saving user data:', { userId, tgUser: value });
+    await saveUserData(userId, { tgUser: value });
+    return ctx.reply(`Name has been set to ${value}.`);
+});
 
-    const text = createText({ trackName, artistName, albumName, playCount, lastPlayed, status });
+// Command to set the user's channel ID
+bot.command('setchannel', async (ctx) => {
+    const value = ctx.message.text.split(' ').slice(1).join(' ');
+    const userId = ctx.from.id.toString();
+    console.log('Received /setchannel command from user:', userId);
 
-    try {
-        if (lastPostedMessageId) {
-            await bot.telegram.editMessageMedia(
-                channelId,
-                lastPostedMessageId,
-                null,
-                {
-                    type: 'photo',
-                    media: albumCover,
-                    caption: `${text}`,
-                    parse_mode: 'HTML'
-                },
-                getReplyMarkup({ id, artistName })
-            );
-        } else {
-            const message = await bot.telegram.sendPhoto(channelId, albumCover, {
-                caption: `${text}`,
-                parse_mode: 'HTML'
-            }, getReplyMarkup({ id, artistName }));
-
-            lastPostedMessageId = message.message_id;
-            writeLastPostedMessageId(lastPostedMessageId);
-        }
-    } catch (error) {
-        console.error('Error posting or updating to Telegram:', error);
+    if (!value) {
+        return ctx.reply("Please provide a channel ID using `/setchannel [channel ID]`.");
     }
-}
+    console.log('Saving user data:', { userId, channelId: value });
+    await saveUserData(userId, { channelId: value });
+    return ctx.reply(`Channel ID has been set to ${value}.`);
+});
+
+// Command to set the user's Last.fm username
+bot.command('setlastfm', async (ctx) => {
+    const value = ctx.message.text.split(' ').slice(1).join(' ');
+    const userId = ctx.from.id.toString();
+    console.log('Received /setlastfm command from user:', userId);
+
+    if (!value) {
+        return ctx.reply("Please provide a Last.fm username using `/setlastfm [username]`.");
+    }
+
+    console.log('Saving user data:', { userId, lastfmUsername: value });
+    await saveUserData(userId, { lastfmUsername: value });
+    return ctx.reply(`Last.fm username has been set to ${value}.`);
+});
 
 async function checkAndPostNowPlaying() {
-    try {
-        const nowPlayingTrack = await fetchNowPlaying();
+    const users = await getUserData();
+    if (!users || !Array.isArray(users)) {
+        console.error("No users found or users is not an array");
+        return;
+    }
+    for (const user of users) {
+        const track = await fetchNowPlaying(user.userId);
+        if (track) {
+            let details = await getSpotifyDetails(track.artistName, track.trackName) || 
+                          await getYouTubeMusicDetails(track.artistName, track.trackName);
 
-        if (nowPlayingTrack) {
-            await postNowPlaying(nowPlayingTrack);
+            if (!details) {
+                console.error('Could not fetch details from Spotify or YouTube Music');
+                continue;
+            }
+
+            const { albumCover, id } = details;
+            const text = createText({ ...track, ...user });
+            const replyMarkup = getReplyMarkup({ id, artistName: track.artistName });
+
+            try {
+                if (user.lastMessageId) {
+                    await bot.telegram.editMessageMedia(
+                        user.channelId,
+                        user.lastMessageId,
+                        null,
+                        {
+                            type: 'photo',
+                            media: albumCover,
+                            caption: text,
+                            parse_mode: 'HTML'
+                        },
+                        replyMarkup
+                    );
+                } else {
+                    const message = await bot.telegram.sendPhoto(user.channelId, albumCover, {
+                        caption: text,
+                        parse_mode: 'HTML',
+                        ...replyMarkup
+                    });
+
+                    await saveUserData(user.userId, { lastMessageId: message.message_id });
+                }
+            } catch (error) {
+                console.error("Error posting to Telegram:", error);
+            }
         }
-    } catch (error) {
-        console.error('Error fetching or posting now playing:', error);
     }
 }
 
-async function initialize() {
-    readLastPostedMessageId();
-    if (!lastPostedMessageId) {
-        console.log("No previous message ID found. A new message will be posted.");
-    }
-    setInterval(checkAndPostNowPlaying, 5000);
+function initialize() {
+    setInterval(checkAndPostNowPlaying, 60000); // Check every minute
 }
+
+// Add this to log all incoming messages
+bot.on('message', (ctx) => {
+    console.log('Received message:', ctx.message);
+});
 
 initialize();
-bot.launch();
+
+bot.launch().then(() => {
+    console.log('Bot is running!');
+});
