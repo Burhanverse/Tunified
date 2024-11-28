@@ -1,10 +1,10 @@
 {
   "name": "tunified",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "lastfm now playing bot for telegram",
   "main": "bot.mjs",
   "scripts": {
-    "start": "node init.mjs"
+    "start": "node bot.mjs"
   },
   "repository": {
     "type": "git",

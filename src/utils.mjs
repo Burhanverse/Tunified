@@ -121,8 +121,10 @@ function createText({ trackName, artistName, albumName, status, lastPlayed, tgUs
 function getReplyMarkup({ id, artistName }) {
     const googleSearchLink = `https://www.google.com/search?q=${encodeURIComponent(artistName + ' artist bio')}`;
     return Markup.inlineKeyboard([
-        [{ text: "Listen Now", url: `https://song.link/s/${id}` }],
-        [{ text: "About Artist", url: googleSearchLink }],
+        [
+            { text: "Listen Now", url: `https://song.link/s/${id}` },
+            { text: "About Artist", url: googleSearchLink },
+        ],
         [{ text: "Made by AquaMods", url: "https://akuamods.t.me" }],
     ]);
 }

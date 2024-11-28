@@ -112,7 +112,7 @@ async function checkAndPostNowPlaying() {
 }
 
 function initialize() {
-    setInterval(checkAndPostNowPlaying, 60000); // Check every minute
+    setInterval(checkAndPostNowPlaying, 5000); // Check every 5 seconds
 }
 
 // Add this to log all incoming messages
