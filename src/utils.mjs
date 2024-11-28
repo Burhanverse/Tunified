@@ -1,86 +1,130 @@
-import { Markup } from 'telegraf';
+import { MongoClient } from 'mongodb';
 import dotenv from 'dotenv';
+import { Markup } from 'telegraf';
 
 dotenv.config();
 
 const lastfmApiKey = process.env.LASTFM_API_KEY;
-const lastfmUser = process.env.LASTFM_USER;
-const tgUser = process.env.TELEGRAM_USER;
+let dbClient;
+const databaseName = 'TunifiedDB';
+const usersCollection = 'users';
+let db;
+let isConnected = false;
 
-let lastPlayed = null;
+// Connect to MongoDB
+async function connectDB(forceReconnect = false) {
+    if (!isConnected) {
+        try {
+            dbClient = new MongoClient(process.env.MONGO_URI);
+            await dbClient.connect();
+            if (forceReconnect) await dbClient.db().command({ ping: 1 });
+            db = dbClient.db(databaseName);
+            isConnected = true;
+            console.log("Connected to MongoDB");
+        } catch (error) {
+            console.error("Error connecting to MongoDB:", error);
+        }
+    }
+}
 
-async function fetchNowPlaying() {
+// Initialize database and create necessary collections
+async function initializeDatabase() {
+    await connectDB();
+    if (!isConnected) try {
+        console.log("Initializing database...");
+        await db.createCollection(usersCollection);
+        console.log("Users collection created successfully");
+    } catch (error) {
+        if (error.code !== 48) { // 48 is the error code for "collection already exists"
+            console.error("Error creating users collection:", error);
+        }
+    }
+}
+
+// Save user data to MongoDB
+async function saveUserData(userId, data) {
     try {
-        const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${lastfmUser}&api_key=${lastfmApiKey}&format=json`);
+        if (!isConnected) await connectDB(true);
+        const collection = db.collection(usersCollection);
+        await collection.updateOne(
+            { userId },
+            { $set: data },
+            { upsert: true }
+        );
+        console.log(`User data saved for userId: ${userId}`);
+    } catch (error) {
+        console.error("Error saving user data:", error);
+    }
+}
+
+// Get user data from MongoDB
+async function getUserData() {
+    try {
+        if (!isConnected) await connectDB(true);
+        const collection = db.collection(usersCollection);
+        return await collection.find().toArray();
+    } catch (error) {
+        console.error("Error fetching all user data:", error);
+        return null;
+    }
+}
+
+// Fetch now playing track from Last.fm
+async function fetchNowPlaying(userId) {
+    try {
+        if (!isConnected) await connectDB(true);
+        const collection = db.collection(usersCollection);
+        const userData = await collection.findOne({ userId });
+        if (!userData || !userData.lastfmUsername) {
+            throw new Error("Last.fm username not set for user.");
+        }
+
+        const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${userData.lastfmUsername}&api_key=${lastfmApiKey}&format=json`);
         const data = await response.json();
-
         const recentTrack = data.recenttracks.track[0];
-
-        const isPlaying = recentTrack['@attr'] && recentTrack['@attr'].nowplaying === 'true';
+        const isPlaying = recentTrack['@attr']?.nowplaying === 'true';
         const status = isPlaying ? 'Playing' : 'Paused';
 
         if (recentTrack) {
             const trackName = recentTrack.name;
             const artistName = recentTrack.artist['#text'];
             const albumName = recentTrack.album['#text'] || 'Unknown Album';
-            const trackMbid = recentTrack.mbid || null;
-
-            const trackInfoResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${lastfmApiKey}&artist=${encodeURIComponent(artistName)}&track=${encodeURIComponent(trackName)}&username=${lastfmUser}&format=json`);
-            const trackInfoData = await trackInfoResponse.json();
-
-            const playCount = trackInfoData.track.userplaycount || 'N/A';
-
-            if (isPlaying) {
-                lastPlayed = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-            }
 
             return {
+                userId,
+                channelId: userData.channelId,
+                tgUser: userData.tgUser,
                 trackName,
                 artistName,
                 albumName,
-                playCount,
-                lastPlayed,
-                status
+                status,
+                lastPlayed: isPlaying ? new Date().toISOString() : recentTrack.date?.uts || 'N/A',
+                lastMessageId: userData.lastMessageId,
             };
         }
     } catch (error) {
-        console.error('Error fetching now playing from Last.fm:', error);
+        console.error("Error fetching now playing:", error);
+        return null;
     }
-
-    return null;
 }
 
-function createText({trackName, artistName, albumName, playCount, lastPlayed, status }) {
-    return `<b>${tgUser} 𝙞𝙨 𝙇𝙞𝙨𝙩𝙚𝙣𝙞𝙣𝙜 𝙩𝙤:</b>\n\n` +
-           `<b>𝙎𝙤𝙣𝙜:</b> ${trackName}\n` +
-           `<b>𝘼𝙧𝙩𝙞𝙨𝙩:</b> ${artistName}\n` +
-           `<b>𝘼𝙡𝙗𝙪𝙢:</b> ${albumName}\n` +
-           `<b>𝙎𝙩𝙖𝙩𝙪𝙨:</b> ${status}\n` +
-           `<b>𝙋𝙡𝙖𝙮 𝘾𝙤𝙪𝙣𝙩:</b> ${playCount}\n` +
-           `<b>𝙇𝙖𝙨𝙩 𝙋𝙡𝙖𝙮𝙚𝙙:</b> ${lastPlayed || 'N/A'}\n` +
-           `<b>𝙇𝙖𝙨𝙩.𝙁𝙈 𝙋𝙧𝙤𝙛𝙞𝙡𝙚:</b> <a href="https://www.last.fm/user/${encodeURIComponent(lastfmUser)}">${lastfmUser}</a>`;
+// Create message text
+function createText({ trackName, artistName, albumName, status, lastPlayed, tgUser, lastMessageId }) {
+    return `<b>${tgUser || 'User'} is Listening to:</b>\n\n` +
+           `<b>Song:</b> ${trackName}\n` +
+           `<b>Artist:</b> ${artistName}\n` +
+           `<b>Album:</b> ${albumName}\n\n` +
+           `<b>Status:</b> ${status}\n` +
+           `<b>Last Played:</b> ${lastPlayed}`;
 }
 
 function getReplyMarkup({ id, artistName }) {
     const googleSearchLink = `https://www.google.com/search?q=${encodeURIComponent(artistName + ' artist bio')}`;
     return Markup.inlineKeyboard([
-        [
-            {
-                text: "Listen Now",
-                url: `https://song.link/s/${id}`,
-            },
-            {
-                text: `About Artist`,
-                url: googleSearchLink,
-            },
-        ],
-        [
-            {
-                text: `Made by AquaMods`,
-                url: `https://akuamods.t.me`,
-            },
-        ],
+        [{ text: "Listen Now", url: `https://song.link/s/${id}` }],
+        [{ text: "About Artist", url: googleSearchLink }],
+        [{ text: "Made by AquaMods", url: "https://akuamods.t.me" }],
     ]);
 }
 
-export { fetchNowPlaying, createText, getReplyMarkup };
+export { connectDB, initializeDatabase, saveUserData, getUserData, fetchNowPlaying, createText, getReplyMarkup };

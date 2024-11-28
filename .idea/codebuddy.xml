@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CodebuddyPersistentProjectState">
+    <option name="autoFileSelection" value="true" />
+    <option name="promptHistory">
+      <list>
+        <option value="&#10;so now listen to be carefully,&#10;1. as of now the bot can be used by only one user for one channel, but i want you to make changes to support multiple channels by utilising a database unique to each user with the userid, channelid, lastfmusername.&#10;2. Add bot cmds to set these up on the database.&#10;3. use mongodb for database &#10;4. add a few more data to be set like /set name for which is used as ${tgUser} and also save the messageid to avoid repeated posting and update the same post instead&#10;5. use mongodb module driver and also dont make a seperate script for database handling instead add it to the utils.mjs itself" />
+        <option value="what is this error," />
+        <option value="file://$PROJECT_DIR$/bot.mjs:55&#10;    for (const user of users) {&#10;                       ^&#10;&#10;TypeError: users is not iterable&#10;    at Timeout.checkAndPostNowPlaying [as _onTimeout] (file:///home/aqua/Documents/github/Tunified/bot.mjs:55:24)&#10;    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)&#10;&#10;Node.js v22.11.0&#10;Error starting the bot: Command failed: node bot.mjs&#10;" />
+        <option value="well the thing is it does'nt respond to any cmds and also i just checked the it doesn't initiate any database creation in mongodb server as even after using those cmds" />
+        <option value="okay this seems to solve the creation of collections in mongodb but the 2nd issue which is not responding to any cmds and not being able tp save any of the userdata to the mongodb server, also it seems like the &quot;Connected to MongoDB&quot; is being spammed on the console" />
+        <option value="okay everything is working as expected now but the connected to mongodb is still being repeated asi said before" />
+      </list>
+    </option>
+    <option name="selectedModel" value="codebuddy:OPENAI_O1" />
+    <option name="ttsEnabled" value="false" />
+  </component>
+</project>
