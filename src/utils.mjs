@@ -99,7 +99,6 @@ async function fetchNowPlaying(userId) {
                 albumName,
                 status,
                 lastPlayed: isPlaying ? new Date().toISOString() : recentTrack.date?.uts || 'N/A',
-                lastfmUsername,
                 lastMessageId: userData.lastMessageId,
             };
         }
@@ -109,8 +108,7 @@ async function fetchNowPlaying(userId) {
     }
 }
 
-// Create message text
-function createText({ trackName, artistName, albumName, status, tgUser, lastMessageId }) {
+function createText({ trackName, artistName, albumName, status, tgUser }) {
     return `<b>${tgUser || 'User'} is Listening to:</b>\n\n` +
            `<b>Song:</b> ${trackName}\n` +
            `<b>Artist:</b> ${artistName}\n` +
@@ -119,14 +117,13 @@ function createText({ trackName, artistName, albumName, status, tgUser, lastMess
            `©<a href="https://akuamods.t.me">AquaMods</a>`;
 }
 
-function getReplyMarkup({ id, artistName, lastfmUsername }) {
+function getReplyMarkup({ id, artistName }) {
     const googleSearchLink = `https://www.google.com/search?q=${encodeURIComponent(artistName + ' artist bio')}`;
     return Markup.inlineKeyboard([
         [
             { text: "Listen Now", url: `https://song.link/s/${id}` },
             { text: "About Artist", url: googleSearchLink },
         ],
-        [{ text: "Last.FM Profile", url: `https://last.fm/user/${lastfmUsername}` }],
     ]);
 }
 
