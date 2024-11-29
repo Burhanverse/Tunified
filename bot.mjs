@@ -22,9 +22,9 @@ bot.start((ctx) => {
       'Tunified bot fetches the currently playing song from Last.fm and posts details about the song to a specified channel.\n\n' +
       'Firstly Add the bot as Admin to your channnel and then use the setup cmds accordingly,\n' +
       'Setup Commands:\n' +
-      '/setname your_nickname - Name to be shown on the post.\n' +
-      '/setchannel channel_id - ChannelID use @chatidrobot to get ID.\n' +
-      '/setlastfm lastfm_username - Last.FM usrname required for scrobbling.',
+      '/setname your_nickname - To be shown on the post.\n' +
+      '/setchannel channel_id - Use @chatidrobot to get ID.\n' +
+      '/setlastfm lastfm_username - Last.FM usrname for scrobbling.',
       { parse_mode: 'HTML' }
     );
 });

@@ -89,7 +89,7 @@ async function fetchNowPlaying(userId, lastPlayed) {
         if (recentTrack) {
             const trackName = recentTrack.name;
             const artistName = recentTrack.artist['#text'];
-            const albumName = recentTrack.album['#text'] || 'Unknown Album';
+            const albumName = recentTrack.album['#text'] || '';
 
             // Fetch track info for play count
             const trackInfoResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${lastfmApiKey}&artist=${encodeURIComponent(artistName)}&track=${encodeURIComponent(trackName)}&username=${userData.lastfmUsername}&format=json`);
@@ -119,7 +119,7 @@ function createText({ trackName, artistName, albumName, status, tgUser, playCoun
     return `<b><i><a href="https://www.last.fm/user/${encodeURIComponent(lastfmUsername)}">${tgUser || 'User'}</a> is Listening to:</i></b>\n\n` +
            `<b><i>Song:</i></b> ${trackName}\n` +
            `<b><i>Artist:</i></b> ${artistName}\n` +
-           `<b><i>Album:</i></b> ${albumName}\n` +
+           `${albumName ? `<b><i>Album:</i></b> ${albumName}\n` : ''}` +
            `<b><i>Play Count:</i></b> ${playCount}\n` +
             `<b><i>Status:</i></b> ${status}\n\n` +
            `©<a href="https://akuamods.t.me">AquaMods</a>`;
