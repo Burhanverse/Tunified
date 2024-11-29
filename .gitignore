@@ -1,6 +1,7 @@
 node_modules/
-codebuddy/
+.codebuddy/
 venv/
+src/oauth.json
 .env
 *.txt
 *.zip

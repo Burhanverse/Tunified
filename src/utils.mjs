@@ -70,7 +70,7 @@ async function getUserData() {
 }
 
 // Fetch now playing track from Last.fm
-async function fetchNowPlaying(userId) {
+async function fetchNowPlaying(userId, lastPlayed) {
     try {
         if (!isConnected) await connectDB(true);
         const collection = db.collection(usersCollection);
@@ -79,6 +79,7 @@ async function fetchNowPlaying(userId) {
             throw new Error("Last.fm username not set for user.");
         }
 
+        // Fetch recent tracks
         const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${userData.lastfmUsername}&api_key=${lastfmApiKey}&format=json`);
         const data = await response.json();
         const recentTrack = data.recenttracks.track[0];
@@ -90,6 +91,11 @@ async function fetchNowPlaying(userId) {
             const artistName = recentTrack.artist['#text'];
             const albumName = recentTrack.album['#text'] || 'Unknown Album';
 
+            // Fetch track info for play count
+            const trackInfoResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${lastfmApiKey}&artist=${encodeURIComponent(artistName)}&track=${encodeURIComponent(trackName)}&username=${userData.lastfmUsername}&format=json`);
+            const trackInfoData = await trackInfoResponse.json();
+            const playCount = trackInfoData.track.userplaycount || 'N/A';
+
             return {
                 userId,
                 channelId: userData.channelId,
@@ -98,8 +104,9 @@ async function fetchNowPlaying(userId) {
                 artistName,
                 albumName,
                 status,
-                lastPlayed: isPlaying ? new Date().toISOString() : recentTrack.date?.uts || 'N/A',
+                playCount,
                 lastMessageId: userData.lastMessageId,
+                lastfmUsername: userData.lastfmUsername,
             };
         }
     } catch (error) {
@@ -108,12 +115,13 @@ async function fetchNowPlaying(userId) {
     }
 }
 
-function createText({ trackName, artistName, albumName, status, tgUser }) {
-    return `<b>${tgUser || 'User'} is Listening to:</b>\n\n` +
-           `<b>Song:</b> ${trackName}\n` +
-           `<b>Artist:</b> ${artistName}\n` +
-           `<b>Album:</b> ${albumName}\n` +
-           `<b>Status:</b> ${status}\n\n` +
+function createText({ trackName, artistName, albumName, status, tgUser, playCount, lastfmUsername }) {
+    return `<b><i><a href="https://www.last.fm/user/${encodeURIComponent(lastfmUsername)}">${tgUser || 'User'}</a> is Listening to:</i></b>\n\n` +
+           `<b><i>Song:</i></b> ${trackName}\n` +
+           `<b><i>Artist:</i></b> ${artistName}\n` +
+           `<b><i>Album:</i></b> ${albumName}\n` +
+           `<b><i>Play Count:</i></b> ${playCount}\n` +
+            `<b><i>Status:</i></b> ${status}\n\n` +
            `©<a href="https://akuamods.t.me">AquaMods</a>`;
 }
 

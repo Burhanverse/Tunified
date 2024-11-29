@@ -16,6 +16,18 @@ await initializeDatabase();
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
+// Bot commands
+bot.start((ctx) => {
+    ctx.reply(
+      'Tunified bot fetches the currently playing song from Last.fm and posts details about the song to a specified channel.\n\n' +
+      'Setup Commands:\n' +
+      '/setname your_nickname - Name you would like to show on the post.\n' +
+      '/setchannel channel_id - ChannelID including -100 use @chatidrobot to get ID.\n' +
+      '/setlastfm lastfm_username - Last.FM usrname required for scrobbling.',
+      { parse_mode: 'HTML' }
+    );
+});
+
 // Command to set the user's name
 bot.command('setname', async (ctx) => {
     const value = ctx.message.text.split(' ').slice(1).join(' ');
