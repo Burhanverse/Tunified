@@ -16,7 +16,7 @@ async function getYouTubeMusicDetails(artist, track) {
 
         const firstResult = data.results[0];
 
-        const modifiedThumbnailUrl = firstResult.thumbnails[0].url.replace(/w60-h60/, 'w544-h544');
+        const modifiedThumbnailUrl = firstResult.thumbnails[0].url.replace(/w60-h60/, 'w1080-h1080');
 
         return {
             id: firstResult.videoId,
