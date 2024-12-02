@@ -19,6 +19,7 @@ async function getYouTubeMusicDetails(artist, track) {
         const modifiedThumbnailUrl = firstResult.thumbnails[0].url.replace(/w60-h60/, 'w544-h544');
 
         return {
+            id: firstResult.videoId,
             youtubeMusicLink: `https://music.youtube.com/watch?v=${firstResult.videoId}`,
             albumCover: modifiedThumbnailUrl,
             albumName: firstResult.album.name,
