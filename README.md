@@ -5,6 +5,7 @@
 </h1> 
 A Telegram bot that fetches the currently playing song from Last.fm and posts details about the song to a specified channel.
 
+Availavle at <a href="https://t.me/tunifiedxbot">Tunified</a>
 ---
 ### Preview:
 <div align="center">
@@ -14,7 +15,7 @@ A Telegram bot that fetches the currently playing song from Last.fm and posts de
 ### Features:
 
 - Fetches the now playing song from Last.fm.
-- Utilizes Spotify and YTDL modules to get the required metadata for the tracks.
+- Utilizes Youtube Music api to get the required metadata for the tracks.
 - Posts the song details to a Telegram channel.
 - Updates the post every 5 seconds to reflect the current song.
 - Shows the Last listened song date and time.
@@ -24,11 +25,11 @@ A Telegram bot that fetches the currently playing song from Last.fm and posts de
 
 ### Prerequisites & Setup:
 
-- Node.js v14+ installed.
+- Node.js v18+ installed.
 - Telegram Bot API token.
+- MongoDB for database.
 - Last.FM client installed in your phone for scrobbling tracks (it is recommanded to use pano scrobbler if you are on Android).
 - Last.fm API key, Shared secret and username.
-- Spotify Client ID & Client Secret.
 - Telegram Channel ID.
 
 1\. Download and install [Node.js](https://nodejs.org/en/download/).
@@ -49,9 +50,6 @@ LASTFM_SHARED_SECRET=
 LASTFM_USER=
 TELEGRAM_USER=
 TELEGRAM_BOT_TOKEN=
-TELEGRAM_CHANNEL_ID=
-SPOTIFY_CLIENT_ID=
-SPOTIFY_CLIENT_SECRET=
 ```
 5\. Get your Last.FM API KEY & SHARED SECERT from [here](https://www.last.fm/api/account/create) remember to login with the same account you use for scrobbling tracks as this will serve as the main source for the bot to display the current playing track data.
 
@@ -59,9 +57,7 @@ SPOTIFY_CLIENT_SECRET=
 
 7\. To get `TELEGRAM_BOT_TOKEN`, go to chat with [@BotFather](https://t.me/BotFather) and send the command `/newbot`. Following the instructions. Upon completion, [@BotFather](https://t.me/BotFather) will give you the bot token. Don't forget to add the bot to your channel.
 
-8\. Go to [this link](https://developer.spotify.com/dashboard/applications) (login if required) to get your `SPOTIFY_CLIENT_ID` & `SPOTIFY_CLIENT_SECRET`. In your "Dashboard" click on "CREATE AN APP". Enter any name and description of the application. Now ,in the Redirect URIs field enter `https://example.com/` , check all the boxes down below and → click "CREATE AN APP". Now copy the ID and SECERT and put it in the `.env` file.
-
-9\. `TELEGRAM_USER` is your first name on Telegram.
+8\. `TELEGRAM_USER` is your first name on Telegram.
 
 10\.Start the bot:
 ```bash

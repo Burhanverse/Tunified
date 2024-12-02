@@ -11,7 +11,6 @@ const usersCollection = 'users';
 let db;
 let isConnected = false;
 
-// Connect to MongoDB
 async function connectDB(forceReconnect = false) {
     if (!isConnected) {
         try {
@@ -27,7 +26,6 @@ async function connectDB(forceReconnect = false) {
     }
 }
 
-// Initialize database and create necessary collections
 async function initializeDatabase() {
     await connectDB();
     if (!isConnected) try {
@@ -35,13 +33,12 @@ async function initializeDatabase() {
         await db.createCollection(usersCollection);
         console.log("Users collection created successfully");
     } catch (error) {
-        if (error.code !== 48) { // 48 is the error code for "collection already exists"
+        if (error.code !== 48) {
             console.error("Error creating users collection:", error);
         }
     }
 }
 
-// Save user data to MongoDB
 async function saveUserData(userId, data) {
     try {
         if (!isConnected) await connectDB(true);
@@ -57,7 +54,6 @@ async function saveUserData(userId, data) {
     }
 }
 
-// Get user data from MongoDB
 async function getUserData() {
     try {
         if (!isConnected) await connectDB(true);
@@ -69,7 +65,6 @@ async function getUserData() {
     }
 }
 
-// Fetch now playing track from Last.fm
 async function fetchNowPlaying(userId, lastPlayed) {
     try {
         if (!isConnected) await connectDB(true);
@@ -79,7 +74,6 @@ async function fetchNowPlaying(userId, lastPlayed) {
             throw new Error("Last.fm username not set for user.");
         }
 
-        // Fetch recent tracks
         const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${userData.lastfmUsername}&api_key=${lastfmApiKey}&format=json`);
         const data = await response.json();
         const recentTrack = data.recenttracks.track[0];
@@ -91,7 +85,6 @@ async function fetchNowPlaying(userId, lastPlayed) {
             const artistName = recentTrack.artist['#text'];
             const albumName = recentTrack.album['#text'] || '';
 
-            // Fetch track info for play count
             const trackInfoResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${lastfmApiKey}&artist=${encodeURIComponent(artistName)}&track=${encodeURIComponent(trackName)}&username=${userData.lastfmUsername}&format=json`);
             const trackInfoData = await trackInfoResponse.json();
             const playCount = trackInfoData.track.userplaycount || 'N/A';

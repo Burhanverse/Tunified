@@ -1,7 +1,6 @@
 import { Telegraf } from 'telegraf';
 import dotenv from 'dotenv';
 import { initializeDatabase, saveUserData, getUserData, fetchNowPlaying, createText, getReplyMarkup } from './src/utils.mjs';
-import { getSpotifyDetails } from './src/spotify.mjs';
 import { getYouTubeMusicDetails } from './src/youtube.mjs';
 
 dotenv.config();
@@ -9,10 +8,8 @@ dotenv.config();
 const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
 console.log('Bot token:', process.env.TELEGRAM_BOT_TOKEN);
 
-// Initialize MongoDB and create necessary collections
 await initializeDatabase();
 
-// Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
@@ -51,7 +48,7 @@ bot.command('setchannel', async (ctx) => {
     console.log('Received /setchannel command from user:', userId);
 
     if (!value) {
-        return ctx.reply("Please provide a channel ID using `/setchannel [channel ID]`.");
+        return ctx.reply("Please provide a channel ID using `/setchannel` you cam Use @chatidrobot to get ID.");
     }
     console.log('Saving user data:', { userId, channelId: value });
     await saveUserData(userId, { channelId: value });
@@ -65,7 +62,7 @@ bot.command('setlastfm', async (ctx) => {
     console.log('Received /setlastfm command from user:', userId);
 
     if (!value) {
-        return ctx.reply("Please provide a Last.fm username using `/setlastfm [username]`.");
+        return ctx.reply("Please provide your Last.fm username using `/setlastfm [username]`.");
     }
 
     console.log('Saving user data:', { userId, lastfmUsername: value });
@@ -82,11 +79,10 @@ async function checkAndPostNowPlaying() {
     for (const user of users) {
         const track = await fetchNowPlaying(user.userId);
         if (track) {
-            let details = await getSpotifyDetails(track.artistName, track.trackName) || 
-                          await getYouTubeMusicDetails(track.artistName, track.trackName);
+            let details =  await getYouTubeMusicDetails(track.artistName, track.trackName);
 
             if (!details) {
-                console.error('Could not fetch details from Spotify or YouTube Music');
+                console.error('Could not fetch details from YouTube Music');
                 continue;
             }
 
