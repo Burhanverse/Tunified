@@ -5,7 +5,7 @@
 </h1> 
 A Telegram bot that fetches the currently playing song from Last.fm and posts details about the song to a specified channel.
 
-Availavle at <a href="https://t.me/tunifiedxbot">Tunified</a>
+Available at <a href="https://t.me/tunifiedxbot">Tunified</a>
 ---
 ### Preview:
 <div align="center">
@@ -18,13 +18,10 @@ Availavle at <a href="https://t.me/tunifiedxbot">Tunified</a>
 - Utilizes Youtube Music api to get the required metadata for the tracks.
 - Posts the song details to a Telegram channel.
 - Updates the post every 5 seconds to reflect the current song.
-- Shows the Last listened song date and time.
-- Configurable via `.env` file for API keys and other settings.
 
 ---
 
 ### Prerequisites & Setup:
-
 - Node.js v18+ installed.
 - Telegram Bot API token.
 - MongoDB for database.
@@ -47,9 +44,8 @@ Availavle at <a href="https://t.me/tunifiedxbot">Tunified</a>
 ```env
 LASTFM_API_KEY=
 LASTFM_SHARED_SECRET=
-LASTFM_USER=
-TELEGRAM_USER=
 TELEGRAM_BOT_TOKEN=
+MONGO_URI=
 ```
 5\. Get your Last.FM API KEY & SHARED SECERT from [here](https://www.last.fm/api/account/create) remember to login with the same account you use for scrobbling tracks as this will serve as the main source for the bot to display the current playing track data.
 
@@ -57,19 +53,12 @@ TELEGRAM_BOT_TOKEN=
 
 7\. To get `TELEGRAM_BOT_TOKEN`, go to chat with [@BotFather](https://t.me/BotFather) and send the command `/newbot`. Following the instructions. Upon completion, [@BotFather](https://t.me/BotFather) will give you the bot token. Don't forget to add the bot to your channel.
 
-8\. `TELEGRAM_USER` is your first name on Telegram.
+8\. Create a mongodb cluster for database.
 
-10\.Start the bot:
+9\.Start the bot:
 ```bash
     npm start
 ```
-- Updates to latest source from github, clean installs module as speciefied in package-lock.json and then starts the bot.
-
-OR for normal startup of the bot,
-```bash
-    node bot.mjs
-```
-
 ---
 
 The bot will now fetch the currently playing song from Last.fm every 5 seconds and post details to the specified Telegram channel.
