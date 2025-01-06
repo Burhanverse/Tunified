@@ -7,7 +7,7 @@ async function getYouTubeMusicDetails(artist, track) {
     const searchString = `${artist} ${track}`;
     const options = {
         method: 'GET',
-        url: 'https://editorchoice-api.vercel.app/ytmsearch',
+        url: 'https://editorchoice-api-mvmv.onrender.com/ytmsearch',
         params: { query: searchString }
     };
 
