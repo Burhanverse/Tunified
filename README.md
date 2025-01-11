@@ -38,7 +38,7 @@ Available at <a href="https://t.me/tunifiedxbot">Tunified</a>
 ```
 3\. Install dependencies:
 ```bash
-    npm install
+    npm install --include=dev
 ```
 4\. Create a `.env` file in the root directory and add the following environment variables:
 ```env
