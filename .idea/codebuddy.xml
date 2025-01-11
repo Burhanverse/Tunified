@@ -18,7 +18,7 @@
         <option value="use ytdlp instead of ytdl-core to get the best track cover image of w544 h544 size also make sure it searches on youtube music cause youtube thumbnails are all 16:9 also keep in mind that ytdlp is a python library" />
       </list>
     </option>
-    <option name="selectedModel" value="codebuddy:OPENAI_O1" />
+    <option name="selectedModel" value="codebuddy:CLAUDE_3.5_SONNET_V7" />
     <option name="ttsEnabled" value="false" />
   </component>
 </project>

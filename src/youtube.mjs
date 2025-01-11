@@ -7,7 +7,7 @@ async function getYouTubeMusicDetails(artist, track) {
     const searchString = `${artist} ${track}`;
     const options = {
         method: 'GET',
-        url: 'https://editorchoice-api-mvmv.onrender.com/ytmsearch',
+        url: 'http://127.0.0.1:8080/search',
         params: { query: searchString }
     };
 

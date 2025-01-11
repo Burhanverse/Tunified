@@ -1,10 +1,12 @@
 {
   "name": "tunified",
-  "version": "2.2.2",
+  "version": "3.0.0",
   "description": "lastfm now playing bot for telegram",
   "main": "bot.mjs",
   "scripts": {
-    "start": "node bot.mjs"
+    "start": "concurrently \"npm:api\" \"npm:bot\"",
+    "api": "pip install -r api/requirements.txt && python3 api/ytm.py",
+    "bot": "npm install && node bot.mjs"
   },
   "repository": {
     "type": "git",
@@ -25,5 +27,7 @@
     "superagent": "^10.0.0",
     "telegraf": "^4.16.3"
   },
-  "devDependencies": {}
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
 }
