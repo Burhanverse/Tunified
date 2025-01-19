@@ -114,8 +114,8 @@ function createText({ trackName, artistName, albumName, status, tgUser, playCoun
            `<b><i>Artist:</i></b> ${artistName}\n` +
            `${albumName ? `<b><i>Album:</i></b> ${albumName}\n` : ''}` +
            `<b><i>Play Count:</i></b> ${playCount}\n` +
-            `<b><i>Status:</i></b> ${status}\n\n` +
-           `©<a href="https://akuamods.t.me">AquaMods</a>`;
+            `<b><i>Status:</i></b> ${status}\n` +
+           `©<a href="https://burhanverse.t.me">𝘗𝘳𝘫𝘬𝘵:𝘚𝘪𝘥.</a>`;
 }
 
 function getReplyMarkup({ id, artistName }) {
