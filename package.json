@@ -1,13 +1,13 @@
 {
   "name": "tunified",
-  "version": "3.1.0",
+  "version": "3.1.3",
   "description": "lastfm now playing bot for telegram",
   "main": "bot.mjs",
   "scripts": {
-    "start": "npm install concurrently && npm run launch",
+    "start": "npm install concurrently && pip install -r api/ytmusic/requirements.txt && npm install && npm run launch",
     "launch": "concurrently \"npm:api\" \"npm:bot\"",
-    "api": "pip install -r api/ytmusic/requirements.txt && python3 api/ytmusic/api.py",
-    "bot": "npm install && node bot.mjs"
+    "api": "python3 api/ytmusic/api.py",
+    "bot": "node bot.mjs"
   },
   "repository": {
     "type": "git",
