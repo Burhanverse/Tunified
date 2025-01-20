@@ -20,11 +20,7 @@ async function getYouTubeMusicDetails(artist, track) {
 
         return {
             id: firstResult.videoId,
-            youtubeMusicLink: `https://music.youtube.com/watch?v=${firstResult.videoId}`,
             albumCover: modifiedThumbnailUrl,
-            albumName: firstResult.album.name,
-            releaseDate: firstResult.duration,
-            artistLink: `https://music.youtube.com/search?q=${artist}`
         };
     } catch (error) {
         console.error('YouTube Music API error:', error);
