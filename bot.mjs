@@ -1,12 +1,13 @@
-import { Telegraf } from 'telegraf';
+import { Bot } from 'grammy';
 import dotenv from 'dotenv';
 import { initializeDatabase, saveUserData, getUserData, fetchNowPlaying, createText, getReplyMarkup } from './src/utils.mjs';
 import { getYouTubeMusicDetails } from './src/youtube.mjs';
 
 dotenv.config();
 
-const bot = new Telegraf(process.env.TELEGRAM_BOT_TOKEN);
-console.log('Bot token:', process.env.TELEGRAM_BOT_TOKEN);
+const BOT_TOKEN = process.env.TOKEN;
+const bot = new Bot(BOT_TOKEN);
+console.log('Bot token:', BOT_TOKEN);
 
 await initializeDatabase();
 
@@ -14,15 +15,15 @@ process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
 // Bot commands
-bot.start((ctx) => {
+bot.command('start', (ctx) => {
     ctx.reply(
-      'Tunified bot fetches the currently playing song from Last.fm and posts details about the song to a specified channel.\n\n' +
-      'Firstly Add the bot as Admin to your channnel and then use the setup cmds accordingly,\n' +
-      'Setup Commands:\n' +
-      '/setname your_nickname - To be shown on the post.\n' +
-      '/setchannel channel_id - Use @chatidrobot to get ID.\n' +
-      '/setlastfm lastfm_username - Last.FM usrname for scrobbling.',
-      { parse_mode: 'HTML' }
+        'Tunified bot fetches the currently playing song from Last.fm and posts details about the song to a specified channel.\n\n' +
+        'Firstly Add the bot as Admin to your channnel and then use the setup cmds accordingly,\n' +
+        'Setup Commands:\n' +
+        '/setname your_nickname - To be shown on the post.\n' +
+        '/setchannel channel_id - Use @chatidrobot to get ID.\n' +
+        '/setlastfm lastfm_username - Last.FM usrname for scrobbling.',
+        { parse_mode: 'HTML' }
     );
 });
 
@@ -79,7 +80,7 @@ async function checkAndPostNowPlaying() {
     for (const user of users) {
         const track = await fetchNowPlaying(user.userId);
         if (track) {
-            let details =  await getYouTubeMusicDetails(track.artistName, track.trackName);
+            let details = await getYouTubeMusicDetails(track.artistName, track.trackName);
 
             if (!details) {
                 console.error('Could not fetch details from YouTube Music');
@@ -92,23 +93,22 @@ async function checkAndPostNowPlaying() {
 
             try {
                 if (user.lastMessageId) {
-                    await bot.telegram.editMessageMedia(
+                    await bot.api.editMessageMedia(
                         user.channelId,
                         user.lastMessageId,
-                        null,
                         {
                             type: 'photo',
                             media: albumCover,
                             caption: text,
                             parse_mode: 'HTML'
                         },
-                        replyMarkup
+                        { reply_markup: replyMarkup.reply_markup }
                     );
                 } else {
-                    const message = await bot.telegram.sendPhoto(user.channelId, albumCover, {
+                    const message = await bot.api.sendPhoto(user.channelId, albumCover, {
                         caption: text,
                         parse_mode: 'HTML',
-                        ...replyMarkup
+                        reply_markup: replyMarkup.reply_markup
                     });
 
                     await saveUserData(user.userId, { lastMessageId: message.message_id });
@@ -121,16 +121,14 @@ async function checkAndPostNowPlaying() {
 }
 
 function initialize() {
-    setInterval(checkAndPostNowPlaying, 5000); // Check every 5 seconds
+    setInterval(checkAndPostNowPlaying, 5000);
 }
 
-// Add this to log all incoming messages
 bot.on('message', (ctx) => {
     console.log('Received message:', ctx.message);
 });
 
 initialize();
 
-bot.launch().then(() => {
-    console.log('Bot is running!');
-});
+bot.start();
+console.log('Bot is running!');

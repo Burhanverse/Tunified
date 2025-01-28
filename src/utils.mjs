@@ -1,6 +1,6 @@
 import { MongoClient } from 'mongodb';
 import dotenv from 'dotenv';
-import { Markup } from 'telegraf';
+import { InlineKeyboard } from 'grammy';
 
 dotenv.config();
 
@@ -110,22 +110,21 @@ async function fetchNowPlaying(userId, lastPlayed) {
 
 function createText({ trackName, artistName, albumName, status, tgUser, playCount, lastfmUsername }) {
     return `<b><i><a href="https://www.last.fm/user/${encodeURIComponent(lastfmUsername)}">${tgUser || 'User'}</a> is Listening to:</i></b>\n\n` +
-           `<b><i>Song:</i></b> ${trackName}\n` +
-           `<b><i>Artist:</i></b> ${artistName}\n` +
-           `${albumName ? `<b><i>Album:</i></b> ${albumName}\n` : ''}` +
-           `<b><i>Play Count:</i></b> ${playCount}\n` +
-            `<b><i>Status:</i></b> ${status}\n` +
-           `©<a href="https://burhanverse.t.me">𝘗𝘳𝘫𝘬𝘵:𝘚𝘪𝘥.</a>`;
+        `<b><i>Song:</i></b> ${trackName}\n` +
+        `<b><i>Artist:</i></b> ${artistName}\n` +
+        `${albumName ? `<b><i>Album:</i></b> ${albumName}\n` : ''}` +
+        `<b><i>Play Count:</i></b> ${playCount}\n` +
+        `<b><i>Status:</i></b> ${status}\n\n` +
+        `<a href="https://burhanverse.t.me">𝘗𝘳𝘫𝘬𝘵:𝘚𝘪𝘥.</a>`;
 }
 
 function getReplyMarkup({ id, artistName }) {
     const googleSearchLink = `https://www.google.com/search?q=${encodeURIComponent(artistName + ' artist bio')}`;
-    return Markup.inlineKeyboard([
-        [
-            { text: "Listen Now", url: `https://song.link/y/${id}` },
-            { text: "About Artist", url: googleSearchLink },
-        ],
-    ]);
+    const keyboard = new InlineKeyboard()
+        .url("Listen Now", `https://song.link/y/${id}`)
+        .url("About Artist", googleSearchLink);
+
+    return { reply_markup: keyboard };
 }
 
 export { connectDB, initializeDatabase, saveUserData, getUserData, fetchNowPlaying, createText, getReplyMarkup };

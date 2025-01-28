@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://github.com/Burhanverse/assets/blob/main/Tuneified.png" width="260" height="260">
 </div>
-<h1 align="center">Tunified (Inspired by <a href="https://github.com/Runixe786/Tunify">Tunify</a>)
+<h1 align="center">Tunified (Inspired by <a href="https://github.com/mikhailsdv/spotify-playing-now">Spotify Now Playing</a> tellegram bot)
 </h1> 
 A Telegram bot that fetches the currently playing song from Last.fm and posts details about the song to a specified channel.
 
@@ -14,10 +14,11 @@ Available at <a href="https://t.me/tunifiedxbot">Tunified</a>
 
 ### Features:
 
-- Fetches the now playing song from Last.fm.
-- Utilizes Youtube Music api to get the required metadata for the tracks.
-- Posts the song details to a Telegram channel.
-- Updates the post every 5 seconds to reflect the current song.
+- [x] Fetches the now playing song from Last.fm.
+- [x] Utilizes Youtube Music api to get the required metadata for the tracks.
+- [x] Posts the song details to a Telegram channel.
+- [x] Updates the post every 5 seconds to reflect the current song.
+- [x] Supports multiple channels
 
 ---
 

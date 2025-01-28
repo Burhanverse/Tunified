@@ -16,9 +16,12 @@
         <option value="use ytdlp instead of ytdl-core to get the best track cover image of w544 h544 size also make sure it searches on youtube music cause youtube thumbnails are all 16:9" />
         <option value="fyi ytdlp is a python library " />
         <option value="use ytdlp instead of ytdl-core to get the best track cover image of w544 h544 size also make sure it searches on youtube music cause youtube thumbnails are all 16:9 also keep in mind that ytdlp is a python library" />
+        <option value="update the bot codebase to use grammY telegram bot framework instead of telegraf, and move with the plan to apply with the changes for test" />
+        <option value="revise and update the bot.mjs and src/utils.mjs to use grammY telegram bot framework instead of telegraf, and move with the plan and don't skip or miss a single line of code i want the complete codebase" />
+        <option value="[bot] Bot is running!&#10;[bot] /home/aqua/Documents/github/Tunified/node_modules/grammy/out/core/error.js:47&#10;[bot]     return new GrammyError(`Call to '${method}' failed!`, err, method, payload);&#10;[bot]            ^&#10;[bot] &#10;[bot] GrammyError: Call to 'getMe' failed! (401: Unauthorized)&#10;[bot]     at toGrammyError (/home/aqua/Documents/github/Tunified/node_modules/grammy/out/core/error.js:47:12)&#10;[bot]     at ApiClient.callApi (/home/aqua/Documents/github/Tunified/node_modules/grammy/out/core/client.js:97:48)&#10;[bot]     at process.processTicksAndRejections (node:internal/process/task_queues:105:5)&#10;[bot]     at async withRetries (/home/aqua/Documents/github/Tunified/node_modules/grammy/out/bot.js:521:41)&#10;[bot]     at async Bot.init (/home/aqua/Documents/github/Tunified/node_modules/grammy/out/bot.js:167:22)&#10;[bot]     at async Promise.all (index 0)&#10;[bot]     at async Bot.start (/home/aqua/Documents/github/Tunified/node_modules/grammy/out/bot.js:296:13) {&#10;[bot]   method: 'getMe',&#10;[bot]   payload: {},&#10;[bot]   ok: false,&#10;[bot]   error_code: 401,&#10;[bot]   description: 'Unauthorized',&#10;[bot]   parameters: {}&#10;[bot] }" />
       </list>
     </option>
-    <option name="selectedModel" value="codebuddy:CLAUDE_3.5_SONNET_V7" />
+    <option name="selectedModel" value="codebuddy:GPT4o_Mini_V8" />
     <option name="ttsEnabled" value="false" />
   </component>
 </project>
