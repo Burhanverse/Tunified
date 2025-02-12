@@ -75,9 +75,23 @@ async function fetchNowPlaying(userId) {
             throw new Error("Last.fm username not set for user.");
         }
 
-        const response = await fetch(`http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${userData.lastfmUsername}&api_key=${lastfmApiKey}&format=json`);
+        const response = await fetch(
+            `http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${userData.lastfmUsername}&api_key=${lastfmApiKey}&format=json`
+        );
         const data = await response.json();
-        const recentTrack = data.recenttracks.track[0];
+
+        if (
+            !data.recenttracks ||
+            !data.recenttracks.track ||
+            (Array.isArray(data.recenttracks.track) && data.recenttracks.track.length === 0)
+        ) {
+            throw new Error("No recent tracks available or unexpected API response.");
+        }
+
+        const recentTrack = Array.isArray(data.recenttracks.track)
+            ? data.recenttracks.track[0]
+            : data.recenttracks.track;
+
         const isPlaying = recentTrack['@attr']?.nowplaying === 'true';
         const currentStatus = isPlaying ? 'Playing' : 'Paused';
 
@@ -86,25 +100,29 @@ async function fetchNowPlaying(userId) {
             const artistName = recentTrack.artist['#text'];
             const albumName = recentTrack.album['#text'] || '';
 
-            const trackInfoResponse = await fetch(`http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${lastfmApiKey}&artist=${encodeURIComponent(artistName)}&track=${encodeURIComponent(trackName)}&username=${userData.lastfmUsername}&format=json`);
+            const trackInfoResponse = await fetch(
+                `http://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=${lastfmApiKey}&artist=${encodeURIComponent(
+                    artistName
+                )}&track=${encodeURIComponent(trackName)}&username=${userData.lastfmUsername}&format=json`
+            );
             const trackInfoData = await trackInfoResponse.json();
-            const playCount = trackInfoData.track.userplaycount || 'N/A';
+
+            if (!trackInfoData.track) {
+                console.warn("No track info available from Last.fm API.");
+            }
+            const playCount = trackInfoData.track ? trackInfoData.track.userplaycount || 'N/A' : 'N/A';
 
             let lastListenedTime = userData.lastListenedTime ? new Date(userData.lastListenedTime) : null;
             const previousStatus = userData.status;
 
-            // Update lastListenedTime only when transitioning from Playing to Paused
             if (currentStatus === 'Paused' && previousStatus === 'Playing') {
                 lastListenedTime = new Date();
                 await saveUserData(userId, {
                     lastListenedTime: lastListenedTime.toISOString(),
-                    status: currentStatus
+                    status: currentStatus,
                 });
-            } else {
-                // Update status if it has changed
-                if (currentStatus !== previousStatus) {
-                    await saveUserData(userId, { status: currentStatus });
-                }
+            } else if (currentStatus !== previousStatus) {
+                await saveUserData(userId, { status: currentStatus });
             }
 
             return {
