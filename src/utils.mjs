@@ -65,11 +65,12 @@ async function getUserData() {
     }
 }
 
-async function fetchNowPlaying(userId, lastPlayed) {
+async function fetchNowPlaying(userId) {
     try {
         if (!isConnected) await connectDB(true);
         const collection = db.collection(usersCollection);
         const userData = await collection.findOne({ userId });
+
         if (!userData || !userData.lastfmUsername) {
             throw new Error("Last.fm username not set for user.");
         }
@@ -89,6 +90,13 @@ async function fetchNowPlaying(userId, lastPlayed) {
             const trackInfoData = await trackInfoResponse.json();
             const playCount = trackInfoData.track.userplaycount || 'N/A';
 
+            let lastListenedTime = userData.lastListenedTime ? new Date(userData.lastListenedTime) : null;
+
+            if (!isPlaying) {
+                lastListenedTime = new Date();
+                await saveUserData(userId, { lastListenedTime: lastListenedTime.toISOString() });
+            }
+
             return {
                 userId,
                 channelId: userData.channelId,
@@ -100,6 +108,7 @@ async function fetchNowPlaying(userId, lastPlayed) {
                 playCount,
                 lastMessageId: userData.lastMessageId,
                 lastfmUsername: userData.lastfmUsername,
+                lastListenedTime,
             };
         }
     } catch (error) {
@@ -108,14 +117,52 @@ async function fetchNowPlaying(userId, lastPlayed) {
     }
 }
 
-function createText({ trackName, artistName, albumName, status, tgUser, playCount, lastfmUsername }) {
-    return `<b><i><a href="https://www.last.fm/user/${encodeURIComponent(lastfmUsername)}">${tgUser || 'User'}</a> is Listening to:</i></b>\n\n` +
+function getRelativeTime(timestamp) {
+    if (!timestamp) return "N/A";
+
+    const now = new Date();
+    const diffMs = now - new Date(timestamp);
+    const diffMinutes = diffMs / 60000;
+
+    if (diffMinutes < 10) return "A few minutes ago";
+    if (diffMinutes < 30) return "Recently";
+    if (diffMinutes < 60) return "An hour ago";
+
+    const diffHours = diffMs / 3600000;
+    if (diffHours < 24) return `${Math.floor(diffHours)} hours ago`;
+
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays === 1) return "Yesterday";
+    if (diffDays < 30) return `${diffDays} days ago`;
+
+    const diffMonths = Math.floor(diffDays / 30);
+    if (diffMonths < 12) return `${diffMonths} months ago`;
+
+    const diffYears = Math.floor(diffMonths / 12);
+    return `${diffYears} years ago`;
+}
+
+function getFormattedGMTTime(timestamp) {
+    if (!timestamp) return "N/A";
+    return new Date(timestamp).toLocaleString('en-GB', { timeZone: 'UTC', hour12: false });
+}
+
+function createText({ trackName, artistName, albumName, status, tgUser, playCount, lastfmUsername, lastListenedTime }) {
+    let message = `<b><i><a href="https://www.last.fm/user/${encodeURIComponent(lastfmUsername)}">${tgUser || 'User'}</a> is Listening to:</i></b>\n\n` +
         `<b><i>Song:</i></b> ${trackName}\n` +
-        `<b><i>Artist:</i></b> ${artistName}\n` +
-        `${albumName ? `<b><i>Album:</i></b> ${albumName}\n` : ''}` +
-        `<b><i>Play Count:</i></b> ${playCount}\n` +
-        `<b><i>Status:</i></b> ${status}\n\n` +
-        `<a href="https://burhanverse.t.me">𝘗𝘳𝘫𝘬𝘵:𝘚𝘪𝘥.</a>`;
+        `<b><i>Artist:</i></b> ${artistName}\n`;
+    if (albumName) {
+        message += `<b><i>Album:</i></b> ${albumName}\n`;
+    }
+    message += `<b><i>Play Count:</i></b> ${playCount}\n` +
+        `<b><i>Status:</i></b> ${status}\n`;
+    if (status === "Paused") {
+        message += `<b><i>Last Played:</i></b> ${getRelativeTime(lastListenedTime)}\n\n`;
+    } else {
+        message += `\n`;
+    }
+    message += `<a href="https://burhanverse.t.me">𝘗𝘳𝘫𝘬𝘵:𝘚𝘪𝘥.</a>`;
+    return message;
 }
 
 function getReplyMarkup({ id, artistName }) {
