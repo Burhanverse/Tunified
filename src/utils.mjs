@@ -79,7 +79,7 @@ async function fetchNowPlaying(userId) {
         const data = await response.json();
         const recentTrack = data.recenttracks.track[0];
         const isPlaying = recentTrack['@attr']?.nowplaying === 'true';
-        const status = isPlaying ? 'Playing' : 'Paused';
+        const currentStatus = isPlaying ? 'Playing' : 'Paused';
 
         if (recentTrack) {
             const trackName = recentTrack.name;
@@ -91,10 +91,20 @@ async function fetchNowPlaying(userId) {
             const playCount = trackInfoData.track.userplaycount || 'N/A';
 
             let lastListenedTime = userData.lastListenedTime ? new Date(userData.lastListenedTime) : null;
+            const previousStatus = userData.status;
 
-            if (!isPlaying) {
+            // Update lastListenedTime only when transitioning from Playing to Paused
+            if (currentStatus === 'Paused' && previousStatus === 'Playing') {
                 lastListenedTime = new Date();
-                await saveUserData(userId, { lastListenedTime: lastListenedTime.toISOString() });
+                await saveUserData(userId, {
+                    lastListenedTime: lastListenedTime.toISOString(),
+                    status: currentStatus
+                });
+            } else {
+                // Update status if it has changed
+                if (currentStatus !== previousStatus) {
+                    await saveUserData(userId, { status: currentStatus });
+                }
             }
 
             return {
@@ -104,11 +114,11 @@ async function fetchNowPlaying(userId) {
                 trackName,
                 artistName,
                 albumName,
-                status,
+                status: currentStatus,
                 playCount,
                 lastMessageId: userData.lastMessageId,
                 lastfmUsername: userData.lastfmUsername,
-                lastListenedTime,
+                lastListenedTime: currentStatus === 'Paused' ? lastListenedTime : null,
             };
         }
     } catch (error) {
