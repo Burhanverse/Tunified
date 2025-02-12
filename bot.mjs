@@ -113,9 +113,7 @@ async function checkAndPostNowPlaying() {
 
                     await saveUserData(user.userId, { lastMessageId: message.message_id });
                 }
-            } catch (error) {
-                console.error("Error posting to Telegram:", error);
-            }
+            } catch (error) { }
         }
     }
 }
