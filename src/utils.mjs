@@ -148,16 +148,16 @@ function getFormattedGMTTime(timestamp) {
 }
 
 function createText({ trackName, artistName, albumName, status, tgUser, playCount, lastfmUsername, lastListenedTime }) {
-    let message = `<b><i><a href="https://www.last.fm/user/${encodeURIComponent(lastfmUsername)}">${tgUser || 'User'}</a> is Listening to:</i></b>\n\n` +
-        `<b><i>Song:</i></b> ${trackName}\n` +
-        `<b><i>Artist:</i></b> ${artistName}\n`;
+    let message = `🎧 <b><i><a href="https://www.last.fm/user/${encodeURIComponent(lastfmUsername)}">${tgUser || 'User'}</a> is Listening to:</i></b>\n\n` +
+        `⋗ <b><i>Song:</i></b> ${trackName}\n` +
+        `⋗ <b><i>Artist:</i></b> ${artistName}\n`;
     if (albumName) {
-        message += `<b><i>Album:</i></b> ${albumName}\n`;
+        message += `⋗ <b><i>Album:</i></b> ${albumName}\n`;
     }
-    message += `<b><i>Play Count:</i></b> ${playCount}\n` +
-        `<b><i>Status:</i></b> ${status}\n`;
+    message += `⋗ <b><i>Play Count:</i></b> ${playCount}\n` +
+        `⋗ <b><i>Status:</i></b> ${status}\n`;
     if (status === "Paused") {
-        message += `<b><i>Last Played:</i></b> ${getRelativeTime(lastListenedTime)}\n\n`;
+        message += `⋗ <b><i>Last Played:</i></b> ${getRelativeTime(lastListenedTime)}\n\n`;
     } else {
         message += `\n`;
     }

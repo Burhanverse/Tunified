@@ -1,6 +1,6 @@
 {
   "name": "tunified",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "description": "lastfm now playing bot for telegram",
   "main": "bot.mjs",
   "scripts": {
