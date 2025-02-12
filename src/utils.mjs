@@ -110,7 +110,7 @@ async function fetchNowPlaying(userId) {
             if (!trackInfoData.track) {
                 console.warn("No track info available from Last.fm API.");
             }
-            const playCount = trackInfoData.track ? trackInfoData.track.userplaycount || 'N/A' : 'N/A';
+            const playCount = trackInfoData.track.userplaycount || 'N/A';
 
             let lastListenedTime = userData.lastListenedTime ? new Date(userData.lastListenedTime) : null;
             const previousStatus = userData.status;
