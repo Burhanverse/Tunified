@@ -152,9 +152,8 @@ function getRelativeTime(timestamp) {
     const diffMs = now - new Date(timestamp);
     const diffMinutes = diffMs / 60000;
 
-    if (diffMinutes < 10) return "A few minutes ago";
-    if (diffMinutes < 30) return "Recently";
-    if (diffMinutes < 60) return "An hour ago";
+    if (diffMinutes < 30) return "A few minutes ago";
+    if (diffMinutes < 60) return "Recently";
 
     const diffHours = diffMs / 3600000;
     if (diffHours < 24) return `${Math.floor(diffHours)} hours ago`;
