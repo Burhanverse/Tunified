@@ -65,6 +65,18 @@ async function getUserData() {
     }
 }
 
+async function getIndividualUserData(userId) {
+    try {
+        const users = await getUserData();
+        if (!users || !Array.isArray(users)) return null;
+
+        return users.find(user => user.userId === userId) || null;
+    } catch (error) {
+        console.error('Error in getIndividualUserData:', error);
+        return null;
+    }
+}
+
 async function fetchNowPlaying(userId) {
     try {
         if (!isConnected) await connectDB(true);
@@ -201,4 +213,4 @@ function getReplyMarkup({ id, artistName }) {
     return { reply_markup: keyboard };
 }
 
-export { connectDB, initializeDatabase, saveUserData, getUserData, fetchNowPlaying, createText, getReplyMarkup };
+export { connectDB, initializeDatabase, saveUserData, getUserData, getIndividualUserData, fetchNowPlaying, createText, getReplyMarkup };
