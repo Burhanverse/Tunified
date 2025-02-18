@@ -1,7 +1,8 @@
 {
   "name": "tunified",
-  "version": "4.0",
-  "description": "lastfm now playing bot for telegram",
+  "version": "4.1",
+  "apivar": "1.0",
+  "description": "Tunified bot fetches the currently playing song from Last.fm and shares it on Telegram.",
   "main": "bot.mjs",
   "scripts": {
     "start": "npm install concurrently && pip install -r api/ytmusic/requirements.txt && npm install && npm run tunified",
@@ -13,12 +14,13 @@
     "type": "git",
     "url": "git+https://github.com/Burhanverse/Tunified.git"
   },
-  "author": "Burhanverse",
+  "author": "@Burhanverse",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/Burhanverse/Tunified/issues"
   },
   "homepage": "https://github.com/Burhanverse/Tunified#readme",
+  "copyright": "Copyright (c) 2025 Burhanverse",
   "dependencies": {
     "axios": "^1.7.8",
     "dotenv": "^16.4.5",
@@ -26,6 +28,7 @@
     "grammy": "^1.34.1",
     "mongodb": "^6.11.0",
     "node-fetch": "^3.3.2",
+    "pretty-bytes": "^6.1.1",
     "superagent": "^10.0.0"
   },
   "devDependencies": {
