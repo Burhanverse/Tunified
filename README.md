@@ -1,11 +1,14 @@
 <div align="center">
-  <img src="https://github.com/Burhanverse/assets/blob/main/Tuneified.png" width="260" height="260">
+  <img src="https://github.com/Burhanverse/assets/blob/main/tunified.svg" width="130">
 </div>
-<h1 align="center">Tunified (Inspired by <a href="https://github.com/mikhailsdv/spotify-playing-now">Spotify Now Playing</a> tellegram bot)
-</h1> 
-A Telegram bot that fetches the currently playing song from Last.fm and posts details about the song to a specified channel.
+<h1 align="center">TunifiedNXT</h1> 
+<p>
+A Telegram bot to fetch the currently playing song from Last.fm and shares it on Telegram.
+</p>
+<P>
+Available at <a href="https://t.me/tunifiedxbot">TunifiedNXT</a>
+</P>
 
-Available at <a href="https://t.me/tunifiedxbot">Tunified</a>
 ---
 ### Preview:
 <div align="center">
@@ -15,15 +18,17 @@ Available at <a href="https://t.me/tunifiedxbot">Tunified</a>
 ### Features:
 
 - [x] Fetches the now playing song from Last.fm.
-- [x] Utilizes Youtube Music api to get the required metadata for the tracks.
+- [x] Utilizes `YTMusicAPI` to get the required CoverART for the tracks.
 - [x] Posts the song details to a Telegram channel.
-- [x] Updates the post every 5 seconds to reflect the current song.
-- [x] Supports multiple channels
+- [x] Updates the post every 5 seconds to reflect the current song (channels only).
+- [x] Supports multiple channels.
+- [x] Supports group chats.
 
 ---
 
 ### Prerequisites & Setup:
 - Node.js v18+ installed.
+- Python 3.11+ installed.
 - Telegram Bot API token.
 - MongoDB for database.
 - Last.FM client installed in your phone for scrobbling tracks (it is recommanded to use pano scrobbler if you are on Android).
@@ -58,10 +63,12 @@ MONGO_URI=
 
 9\.Start the bot:
 ```bash
+python3 -m venv venv
+```
+```bash
+source venv/bin/activate
+```
+```bash
     npm start
 ```
----
-
-The bot will now fetch the currently playing song from Last.fm every 5 seconds and post details to the specified Telegram channel.
-
 ---
