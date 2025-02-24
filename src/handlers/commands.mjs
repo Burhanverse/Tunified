@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { saveUserData } from '../utils.mjs';
 import { sendNowPlaying } from './gcPlay.mjs';
+import { refreshNowPlaying } from './gcPlay.mjs';
 import { exec } from 'child_process';
 import util from 'util';
 import prettyBytes from 'pretty-bytes';
@@ -179,5 +180,14 @@ export function userCommands(bot) {
       parse_mode: 'HTML',
       disable_web_page_preview: true,
     });
+  });
+
+  bot.on('callback_query:data', async (ctx) => {
+    const [action, userId] = ctx.callbackQuery.data.split('_');
+    if (action === 'refresh') {
+      const messageId = ctx.callbackQuery.message.message_id;
+      await refreshNowPlaying(bot, ctx.chat.id, userId, messageId);
+      await ctx.answerCallbackQuery(); // Acknowledge the callback
+    }
   });
 }

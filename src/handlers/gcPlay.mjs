@@ -1,5 +1,6 @@
 import { getIndividualUserData, saveUserData, fetchNowPlaying, createText, getReplyMarkup } from '../utils.mjs';
 import { getYouTubeMusicDetails } from '../youtube.mjs';
+import { InlineKeyboard } from 'grammy';
 
 export async function getNowPlayingForUser(userId) {
     try {
@@ -39,6 +40,10 @@ export async function formatNowPlayingMessage(data) {
         id: details.id,
         artistName: track.artistName
     });
+    replyMarkup.reply_markup.inline_keyboard.push([{
+        text: "Refresh",
+        callback_data: `refresh_${userData.userId}`
+    }]);
 
     return {
         text,
@@ -116,4 +121,9 @@ export async function updateNowPlaying(bot, chatId, messageId, userId) {
         console.error('Error in updateNowPlaying:', error);
         return { error: "Failed to update Now Playing message." };
     }
+}
+
+export async function refreshNowPlaying(bot, chatId, userId, messageId) {
+    const result = await updateNowPlaying(bot, chatId, messageId, userId);
+    return result;
 }
