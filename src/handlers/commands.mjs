@@ -55,6 +55,7 @@ const getBotDetails = () => {
 
 export function userCommands(bot) {
   bot.command(['start', 'help'], async (ctx) => {
+    await ctx.react("😍");
     const content =
       '<i>Tunified bot fetches the currently playing song from Last.fm and shares it on Telegram.</i>\n\n' +
       '<i>Firstly, add the bot as Admin to your channel or group and then use the setup commands accordingly.</i>\n\n' +
@@ -73,6 +74,7 @@ export function userCommands(bot) {
   });
 
   bot.command('setname', async (ctx) => {
+    await ctx.react("⚡");
     if (ctx.chat.type !== 'private') {
       return ctx.reply("Please use this command in a private chat with the bot.");
     }
@@ -89,6 +91,7 @@ export function userCommands(bot) {
   });
 
   bot.command('setchannel', async (ctx) => {
+    await ctx.react("⚡");
     if (ctx.chat.type !== 'private') {
       return ctx.reply("Please use this command in a private chat with the bot.");
     }
@@ -105,6 +108,7 @@ export function userCommands(bot) {
   });
 
   bot.command('setlastfm', async (ctx) => {
+    await ctx.react("⚡");
     if (ctx.chat.type !== 'private') {
       return ctx.reply("Please use this command in a private chat with the bot.");
     }
@@ -120,6 +124,7 @@ export function userCommands(bot) {
   });
 
   bot.command(['lfm', 'fm', 'lastfm'], async (ctx) => {
+    await ctx.react("🔥");
     const userId = ctx.from.id.toString();
     const chatType = ctx.chat.type;
 
@@ -138,6 +143,7 @@ export function userCommands(bot) {
   });
 
   bot.command('stats', async (ctx) => {
+    await ctx.react("👌");
     const start = Date.now();
 
     try {
@@ -167,6 +173,7 @@ export function userCommands(bot) {
   });
 
   bot.command('about', async (ctx) => {
+    await ctx.react("👌");
     const { version, apivar, description, author, homepage, issues, license, copyright } = getBotDetails();
     const message =
       `<b>About Bot:</b> <i>${escapeHTML(description)}</i>\n\n` +
