@@ -35,5 +35,7 @@ function initialize() {
 
 initialize();
 
-bot.start();
+bot.start({
+    drop_pending_updates: true,
+});
 console.log('Bot is running!');
