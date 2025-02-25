@@ -1,6 +1,5 @@
 import { getIndividualUserData, saveUserData, fetchNowPlaying, createText, getReplyMarkup } from '../utils.mjs';
 import { getYouTubeMusicDetails } from '../youtube.mjs';
-import { InlineKeyboard } from 'grammy';
 
 export async function getNowPlayingForUser(userId) {
     try {

@@ -8,20 +8,20 @@ export async function chPlaying(bot) {
         return;
     }
     for (const user of users) {
-        const track = await fetchNowPlaying(user.userId);
-        if (track) {
-            let details = await getYouTubeMusicDetails(track.artistName, track.trackName);
+        try {
+            const track = await fetchNowPlaying(user.userId);
+            if (track) {
+                let details = await getYouTubeMusicDetails(track.artistName, track.trackName);
 
-            if (!details) {
-                console.error('Could not fetch details from YouTube Music');
-                continue;
-            }
+                if (!details) {
+                    console.error('Could not fetch details from YouTube Music');
+                    continue;
+                }
 
-            const { albumCover, id } = details;
-            const text = createText({ ...track, ...user });
-            const replyMarkup = getReplyMarkup({ id, artistName: track.artistName });
+                const { albumCover, id } = details;
+                const text = createText({ ...track, ...user });
+                const replyMarkup = getReplyMarkup({ id, artistName: track.artistName });
 
-            try {
                 if (user.lastMessageId) {
                     await bot.api.editMessageMedia(
                         user.channelId,
@@ -43,7 +43,7 @@ export async function chPlaying(bot) {
 
                     await saveUserData(user.userId, { lastMessageId: message.message_id });
                 }
-            } catch (error) { }
-        }
+            }
+        } catch (error) { }
     }
 }

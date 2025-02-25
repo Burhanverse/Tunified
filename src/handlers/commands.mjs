@@ -1,11 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import { saveUserData } from '../utils.mjs';
-import { sendNowPlaying } from './gcPlay.mjs';
-import { refreshNowPlaying } from './gcPlay.mjs';
-import { exec } from 'child_process';
 import util from 'util';
+import { exec } from 'child_process';
 import prettyBytes from 'pretty-bytes';
+import { saveUserData } from '../utils.mjs';
+import { sendNowPlaying, refreshNowPlaying } from './gcPlay.mjs';
+
 const execPromise = util.promisify(exec);
 const botStartTime = Date.now();
 
