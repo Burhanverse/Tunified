@@ -117,7 +117,7 @@ export function userCommands(bot) {
     return ctx.reply(`Last.fm username has been set to ${value}.`);
   });
 
-  bot.command('lastfm', async (ctx) => {
+  bot.command(['lfm', 'fm', 'lastfm'], async (ctx) => {
     const userId = ctx.from.id.toString();
     const chatType = ctx.chat.type;
 
