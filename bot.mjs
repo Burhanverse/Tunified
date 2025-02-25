@@ -15,16 +15,16 @@ process.once('SIGINT', () => bot.stop('SIGINT'));
 process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
 await bot.api.setMyCommands([
-    { command: "start", description: "Start the bot" },
-    { command: "lastfm", description: "Latest scrobbled track from lastfm" },
-    { command: "lfm", description: "Alt. of lastfm cmd" },
-    { command: "fm", description: "Alt. of lastfm cmd" },
-    { command: "setlastfm", description: "Your lastfm_username for scrobbling" },
-    { command: "setname", description: "Your nick_name" },
-    { command: "setchannel", description: "Your channel_id required for channels only" },
-    { command: "help", description: "Show help text" },
-    { command: "stats", description: "Show bot server stats" },
-    { command: "about", description: "Show information about the bot" },
+    { command: "start", description: "Start the bot.." },
+    { command: "lastfm", description: "Latest scrobbled track from lastfm.." },
+    { command: "lfm", description: "Alias for lastfm cmd.." },
+    { command: "fm", description: "Alias for lastfm cmd.." },
+    { command: "setlastfm", description: "Your lastfm_username for scrobbling.." },
+    { command: "setname", description: "Your nick_name.." },
+    { command: "setchannel", description: "Your channel_id required for channels only.." },
+    { command: "help", description: "Get some drugs.." },
+    { command: "stats", description: "Show bot server stats.." },
+    { command: "about", description: "Show information about the bot.." },
 ]);
 
 userCommands(bot);

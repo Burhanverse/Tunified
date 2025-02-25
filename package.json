@@ -1,6 +1,6 @@
 {
   "name": "tunified",
-  "version": "4.3",
+  "version": "4.4",
   "apivar": "1.0",
   "description": "Tunified bot fetches the currently playing song from Last.fm and shares it on Telegram.",
   "main": "bot.mjs",

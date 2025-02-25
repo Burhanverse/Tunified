@@ -60,6 +60,8 @@ export function userCommands(bot) {
       '<i>Firstly, add the bot as Admin to your channel or group and then use the setup commands accordingly.</i>\n\n' +
       '<b>Available Commands:</b>\n' +
       '/lastfm - <i>Latest scrobbled track.</i>\n' +
+      '/lfm - <i>Alias for lastfm command.</i>\n' +
+      '/fm - <i>Alias for lastfm command.</i>\n' +
       '/setname your_nickname - <i>To be shown on the post.</i>\n' +
       '/setlastfm lastfm_username - <i>Last.FM username required for scrobbling.</i>\n' +
       '/setchannel channel_id - <i>Required only for channels. Use @chatidrobot to get the ID.</i>\n' +
