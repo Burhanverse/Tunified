@@ -3,7 +3,7 @@ import path from 'path';
 import util from 'util';
 import { exec } from 'child_process';
 import prettyBytes from 'pretty-bytes';
-import { saveUserData } from '../utils.mjs';
+import { getIndividualUserData, saveUserData } from '../utils.mjs';
 import { sendNowPlaying, refreshNowPlaying } from './gcPlay.mjs';
 
 const execPromise = util.promisify(exec);
@@ -54,11 +54,9 @@ const getBotDetails = () => {
 };
 
 export function userCommands(bot) {
-  // Add this error handler near the start of your bot setup
   bot.catch((err) => {
     const ctx = err.ctx;
     console.error(`Error while handling update ${ctx.update.update_id}:`, err.error);
-    // Prevent the bot from crashing
   });
 
   bot.command(['start', 'help'], async (ctx) => {
@@ -133,18 +131,15 @@ export function userCommands(bot) {
   bot.command(['lfm', 'fm', 'lastfm'], async (ctx) => {
     await ctx.react("🔥");
 
-    // Make sure userId is consistently a string
     const userId = (ctx.from?.id || ctx.channelPost?.sender_chat?.id)?.toString();
     if (!userId) {
       await ctx.reply("Could not identify sender.");
       return;
     }
 
-    // Check if command is used in appropriate chat type
     if (!['group', 'supergroup'].includes(ctx.chat.type)) return;
 
     try {
-      // Check if user has set Last.fm username before proceeding
       const userData = await getIndividualUserData(userId);
       if (!userData?.lastfmUsername) {
         return ctx.reply(`You need to set your Last.fm username first. Send me a private message with the command: /setlastfm username`);
@@ -215,7 +210,7 @@ export function userCommands(bot) {
     if (action === 'refresh') {
       const messageId = ctx.callbackQuery.message.message_id;
       await refreshNowPlaying(bot, ctx.chat.id, userId, messageId);
-      await ctx.answerCallbackQuery(); // Acknowledge the callback
+      await ctx.answerCallbackQuery();
     }
   });
 }
