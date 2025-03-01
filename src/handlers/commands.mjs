@@ -132,15 +132,24 @@ export function userCommands(bot) {
 
   bot.command(['lfm', 'fm', 'lastfm'], async (ctx) => {
     await ctx.react("🔥");
-    const userId = ctx.from?.id || ctx.channelPost?.sender_chat?.id;
+
+    // Make sure userId is consistently a string
+    const userId = (ctx.from?.id || ctx.channelPost?.sender_chat?.id)?.toString();
     if (!userId) {
       await ctx.reply("Could not identify sender.");
       return;
     }
 
+    // Check if command is used in appropriate chat type
     if (!['group', 'supergroup'].includes(ctx.chat.type)) return;
 
     try {
+      // Check if user has set Last.fm username before proceeding
+      const userData = await getIndividualUserData(userId);
+      if (!userData?.lastfmUsername) {
+        return ctx.reply(`You need to set your Last.fm username first. Send me a private message with the command: /setlastfm username`);
+      }
+
       const result = await sendNowPlaying(bot, ctx.chat.id, userId, true);
 
       if (result.error) {
