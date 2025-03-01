@@ -54,6 +54,13 @@ const getBotDetails = () => {
 };
 
 export function userCommands(bot) {
+  // Add this error handler near the start of your bot setup
+  bot.catch((err) => {
+    const ctx = err.ctx;
+    console.error(`Error while handling update ${ctx.update.update_id}:`, err.error);
+    // Prevent the bot from crashing
+  });
+
   bot.command(['start', 'help'], async (ctx) => {
     await ctx.react("😍");
     const content =
@@ -125,10 +132,13 @@ export function userCommands(bot) {
 
   bot.command(['lfm', 'fm', 'lastfm'], async (ctx) => {
     await ctx.react("🔥");
-    const userId = ctx.from.id.toString();
-    const chatType = ctx.chat.type;
+    const userId = ctx.from?.id || ctx.channelPost?.sender_chat?.id;
+    if (!userId) {
+      await ctx.reply("Could not identify sender.");
+      return;
+    }
 
-    if (!['group', 'supergroup'].includes(chatType)) return;
+    if (!['group', 'supergroup'].includes(ctx.chat.type)) return;
 
     try {
       const result = await sendNowPlaying(bot, ctx.chat.id, userId, true);
