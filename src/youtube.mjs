@@ -14,17 +14,19 @@ async function getYouTubeMusicDetails(artist, track) {
     try {
         const { data } = await axios.request(options);
 
-        const firstResult = data.results[0];
+        if (!data.coverArt || typeof data.coverArt !== 'string' || data.coverArt === "") {
+            console.error('No valid cover art found in response:', data);
+            return { albumCover: 'https://raw.githubusercontent.com/Burhanverse/assets/refs/heads/main/error-404.jpg' };
+        }
 
-        const modifiedThumbnailUrl = firstResult.thumbnails[0].url.replace(/w60-h60/, 'w1080-h1080');
+        const modifiedThumbnailUrl = data.coverArt.replace(/w60-h60/, 'w1080-h1080');
 
         return {
-            id: firstResult.videoId,
-            albumCover: modifiedThumbnailUrl,
+            albumCover: modifiedThumbnailUrl
         };
     } catch (error) {
         console.error('YouTube Music API error:', error);
-        return null;
+        return { albumCover: 'https://raw.githubusercontent.com/Burhanverse/assets/refs/heads/main/error-404.jpg' };
     }
 }
 
