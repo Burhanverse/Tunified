@@ -1,5 +1,6 @@
 node_modules/
 .codebuddy/
+.idea/
 venv/
 src/oauth.json
 .env
