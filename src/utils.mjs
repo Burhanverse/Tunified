@@ -152,7 +152,6 @@ async function fetchNowPlaying(userId) {
             };
         }
     } catch (error) {
-        console.error("Error fetching now playing:", error);
         return null;
     }
 }
