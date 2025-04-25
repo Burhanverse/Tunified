@@ -7,7 +7,6 @@ dotenv.config();
 
 const BOT_TOKEN = process.env.TOKEN;
 const bot = new Bot(BOT_TOKEN);
-console.log('Bot token:', BOT_TOKEN);
 
 await initializeDatabase();
 
