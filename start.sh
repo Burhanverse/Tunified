@@ -7,7 +7,7 @@ update_repo() {
 
 if [[ "$1" == "-c" ]]; then
     update_repo
-    npm start
+    npm run bot
 elif [[ "$1" == "-d" ]]; then
     update_repo
     npm run bot
