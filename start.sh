@@ -10,7 +10,7 @@ if [[ "$1" == "-c" ]]; then
     npm start
 elif [[ "$1" == "-d" ]]; then
     update_repo
-    npm run tunified
+    npm run bot
 else
-    npm run tunified
+    npm run bot
 fi
