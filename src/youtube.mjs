@@ -15,7 +15,7 @@ async function getYouTubeMusicDetails(artist, track) {
     const searchString = `${sanitizedArtist} ${sanitizedTrack}`;
     
     try {
-        const scriptPath = path.join(process.cwd(), 'api/ytmusic', 'ytmusic.py');
+        const scriptPath = path.join(process.cwd(), 'src/ytmusic', 'api.py');
         const { stdout } = await execAsync(`python3 "${scriptPath}" "${searchString}"`);
         
         const data = JSON.parse(stdout);

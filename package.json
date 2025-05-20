@@ -5,10 +5,8 @@
   "description": "Tunified bot fetches the currently playing song from Last.fm and shares it on Telegram.",
   "main": "bot.mjs",
   "scripts": {
-    "start": "npm install concurrently && pip install -r api/ytmusic/requirements.txt && npm install && npm run tunified",
-    "tunified": "concurrently \"npm:api\" \"npm:bot\"",
-    "api": "python3 api/ytmusic/api.py",
-    "bot": "node bot.mjs"
+    "tunified": "pip install -r src/ytmusic/requirements.txt && npm install && npm run app",
+    "app": "node bot.mjs"
   },
   "repository": {
     "type": "git",
