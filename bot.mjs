@@ -15,9 +15,12 @@ process.once('SIGTERM', () => bot.stop('SIGTERM'));
 
 await bot.api.setMyCommands([
     { command: "start", description: "Start the bot.." },
-    { command: "lastfm", description: "Latest scrobbled track from lastfm.." },
-    { command: "fm", description: "Alias for lastfm cmd.." },
-    { command: "tune", description: "Alias for lastfm cmd.." },
+    { command: "tune", description: "Latest scrobbled track from lastfm.." },
+    { command: "tunify", description: "Your Last.fm statistics and charts.." },
+    { command: "recent", description: "Your recent tracks.." },
+    { command: "flex", description: "Flex your Last.fm stats.." },
+    { command: "top_artists", description: "Your top artists (last 7 days).." },
+    { command: "top_tracks", description: "Your top tracks (last 7 days).." },
     { command: "setlastfm", description: "Your lastfm_username for scrobbling.." },
     { command: "setname", description: "Your nick_name.." },
     { command: "setchannel", description: "Your channel_id required for channels only.." },
