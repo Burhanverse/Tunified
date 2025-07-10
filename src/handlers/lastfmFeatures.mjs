@@ -241,7 +241,7 @@ export async function handleLastfmCommand(bot, ctx, userId) {
         
         if (!userData?.lastfmUsername) {
             console.log(`No lastfm username found for userId: ${userId}`);
-            return ctx.reply("You need to set your Last.fm username first. Send me a private message with the command: /setlastfm username");
+            return ctx.reply("You need to set your Last.fm username first. Use the command: /setlastfm username");
         }
 
         const keyboard = createLastfmKeyboard(userId);
@@ -303,7 +303,7 @@ export async function handleLastfmCallback(bot, ctx) {
         
         if (!userData?.lastfmUsername) {
             console.log(`No lastfm username for userId: ${userId}`);
-            await ctx.editMessageText("❌ You need to set your Last.fm username first. Send me a private message with the command: /setlastfm username");
+            await ctx.editMessageText("❌ You need to set your Last.fm username first. Use the command: /setlastfm username");
             return;
         }
         

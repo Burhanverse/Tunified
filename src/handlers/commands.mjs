@@ -105,10 +105,7 @@ export function userCommands(bot) {
 
   bot.command('setname', async (ctx) => {
     await safeReact(ctx, "⚡");
-    if (ctx.chat.type !== 'private') {
-      return ctx.reply("Please use this command in a private chat with the bot.");
-    }
-
+    
     const value = ctx.message.text.split(' ').slice(1).join(' ');
     const userId = ctx.from.id.toString();
 
@@ -122,10 +119,7 @@ export function userCommands(bot) {
 
   bot.command('setchannel', async (ctx) => {
     await safeReact(ctx, "⚡");
-    if (ctx.chat.type !== 'private') {
-      return ctx.reply("Please use this command in a private chat with the bot.");
-    }
-
+    
     const value = ctx.message.text.split(' ').slice(1).join(' ');
     const userId = ctx.from.id.toString();
 
@@ -139,9 +133,7 @@ export function userCommands(bot) {
 
   bot.command('setlastfm', async (ctx) => {
     await safeReact(ctx, "⚡");
-    if (ctx.chat.type !== 'private') {
-      return ctx.reply("Please use this command in a private chat with the bot.");
-    }
+    
     const value = ctx.message.text.split(' ').slice(1).join(' ');
     const userId = ctx.from.id.toString();
 
@@ -167,7 +159,7 @@ export function userCommands(bot) {
     try {
       const userData = await getIndividualUserData(userId);
       if (!userData?.lastfmUsername) {
-        return ctx.reply(`You need to set your Last.fm username first. Send me a private message with the command: /setlastfm username`);
+        return ctx.reply(`You need to set your Last.fm username first. Use the command: /setlastfm username`);
       }
 
       const result = await sendNowPlaying(bot, ctx.chat.id, userId, true);

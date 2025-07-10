@@ -190,7 +190,7 @@ export async function handleFlexCommand(ctx, userId) {
 export async function checkLastfmUser(ctx, userId) {
     const userData = await getIndividualUserData(userId);
     if (!userData?.lastfmUsername) {
-        await ctx.reply("You need to set your Last.fm username first. Send me a private message with the command: /setlastfm username");
+        await ctx.reply("You need to set your Last.fm username first. Use the command: /setlastfm username");
         return false;
     }
     return true;
