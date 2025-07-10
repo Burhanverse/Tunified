@@ -18,6 +18,7 @@ await bot.api.setMyCommands([
     { command: "tune", description: "Latest scrobbled track from lastfm.." },
     { command: "tunify", description: "Your Last.fm statistics and charts.." },
     { command: "recent", description: "Your recent tracks.." },
+    { command: "loved", description: "Your loved tracks.." },
     { command: "flex", description: "Flex your Last.fm stats.." },
     { command: "top_artists", description: "Your top artists (last 7 days).." },
     { command: "top_tracks", description: "Your top tracks (last 7 days).." },

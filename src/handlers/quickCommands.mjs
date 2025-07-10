@@ -186,6 +186,36 @@ export async function handleFlexCommand(ctx, userId) {
     }
 }
 
+// Command for loved tracks
+export async function handleLovedTracksCommand(ctx, userId) {
+    try {
+        const userData = await getIndividualUserData(userId);
+        const result = await getUserLovedTracks(userId, 5);
+        if (result.error) {
+            return ctx.reply(`❌ ${result.error}`);
+        }
+
+        const { tracks, username, total } = result.data;
+        const displayName = userData?.tgUser || username;
+        let message = `❤️ <b><a href="https://www.last.fm/user/${encodeURIComponent(username)}">${escapeHTML(displayName)}</a>'s Loved Tracks</b>\n\n`;
+        
+        tracks.forEach((track, index) => {
+            const artistName = track.artist?.name || track.artist?.['#text'] || 'Unknown Artist';
+            message += `<b>${index + 1}.</b> ${escapeHTML(track.name)} by ${escapeHTML(artistName)}\n`;
+        });
+
+        message += `\n📊 Total Loved: ${formatNumber(total)}`;
+
+        await ctx.reply(message, { 
+            parse_mode: 'HTML',
+            disable_web_page_preview: true 
+        });
+    } catch (error) {
+        console.error('Error in handleLovedTracksCommand:', error);
+        await ctx.reply("Failed to fetch loved tracks. Please try again later.");
+    }
+}
+
 // Utility function to check if user can use Last.fm commands
 export async function checkLastfmUser(ctx, userId) {
     const userData = await getIndividualUserData(userId);

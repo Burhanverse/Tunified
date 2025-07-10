@@ -235,17 +235,13 @@ function getRelativeTime(timestamp) {
 // Main handler for Last.fm commands in groups
 export async function handleLastfmCommand(bot, ctx, userId) {
     try {
-        console.log(`handleLastfmCommand called with userId: ${userId}`);
         const userData = await getIndividualUserData(userId);
-        console.log(`Main command userData:`, userData ? 'found' : 'not found');
         
         if (!userData?.lastfmUsername) {
-            console.log(`No lastfm username found for userId: ${userId}`);
             return ctx.reply("You need to set your Last.fm username first. Use the command: /setlastfm username");
         }
 
         const keyboard = createLastfmKeyboard(userId);
-        console.log(`Created keyboard for userId: ${userId}`);
         
         const message = `🎧 <b>Last.fm Menu for <a href="https://www.last.fm/user/${encodeURIComponent(userData.lastfmUsername)}">${escapeHTML(userData.tgUser || userData.lastfmUsername)}</a></b>\n\nChoose what you want to see:`;
 
@@ -299,10 +295,8 @@ export async function handleLastfmCallback(bot, ctx) {
 
         // Get user data to access tgUser
         const userData = await getIndividualUserData(userId);
-        console.log(`Callback userId: ${userId}, userData:`, userData ? 'found' : 'not found');
         
         if (!userData?.lastfmUsername) {
-            console.log(`No lastfm username for userId: ${userId}`);
             await ctx.editMessageText("❌ You need to set your Last.fm username first. Use the command: /setlastfm username");
             return;
         }

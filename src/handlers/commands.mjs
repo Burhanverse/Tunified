@@ -10,6 +10,7 @@ import {
   handleTopArtistsCommand, 
   handleTopTracksCommand, 
   handleRecentTracksCommand, 
+  handleLovedTracksCommand,
   handleFlexCommand,
   checkLastfmUser,
   getUserIdFromContext,
@@ -92,6 +93,7 @@ export function userCommands(bot) {
       '/top_artists - <i>Your top artists (last 7 days).</i>\n' +
       '/top_tracks - <i>Your top tracks (last 7 days).</i>\n' +
       '/recent - <i>Your recent tracks.</i>\n' +
+      '/loved - <i>Your loved tracks.</i>\n' +
       '/flex - <i>Flex your Last.fm stats with profile picture.</i>\n' +
       '/setname your_nickname - <i>To be shown on the post.</i>\n' +
       '/setlastfm lastfm_username - <i>Last.FM username required for scrobbling.</i>\n' +
@@ -154,8 +156,6 @@ export function userCommands(bot) {
       return;
     }
 
-    if (!['group', 'supergroup'].includes(ctx.chat.type)) return;
-
     try {
       const userData = await getIndividualUserData(userId);
       if (!userData?.lastfmUsername) {
@@ -182,8 +182,6 @@ export function userCommands(bot) {
       return;
     }
 
-    if (!['group', 'supergroup'].includes(ctx.chat.type)) return;
-
     try {
       await handleLastfmCommand(bot, ctx, userId);
     } catch (error) {
@@ -201,8 +199,6 @@ export function userCommands(bot) {
       return;
     }
 
-    if (!isGroupCommand(ctx)) return;
-
     if (await checkLastfmUser(ctx, userId)) {
       await handleTopArtistsCommand(ctx, userId);
     }
@@ -216,8 +212,6 @@ export function userCommands(bot) {
       await ctx.reply("Could not identify sender.");
       return;
     }
-
-    if (!isGroupCommand(ctx)) return;
 
     if (await checkLastfmUser(ctx, userId)) {
       await handleTopTracksCommand(ctx, userId);
@@ -233,10 +227,22 @@ export function userCommands(bot) {
       return;
     }
 
-    if (!isGroupCommand(ctx)) return;
-
     if (await checkLastfmUser(ctx, userId)) {
       await handleRecentTracksCommand(ctx, userId);
+    }
+  });
+
+  bot.command('loved', async (ctx) => {
+    await safeReact(ctx, "⚡");
+
+    const userId = getUserIdFromContext(ctx);
+    if (!userId) {
+      await ctx.reply("Could not identify sender.");
+      return;
+    }
+
+    if (await checkLastfmUser(ctx, userId)) {
+      await handleLovedTracksCommand(ctx, userId);
     }
   });
 
@@ -248,8 +254,6 @@ export function userCommands(bot) {
       await ctx.reply("Could not identify sender.");
       return;
     }
-
-    if (!isGroupCommand(ctx)) return;
 
     if (await checkLastfmUser(ctx, userId)) {
       await handleFlexCommand(ctx, userId);
