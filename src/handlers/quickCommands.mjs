@@ -13,6 +13,23 @@ import {
     escapeHTML
 } from '../lastfm.mjs';
 
+// Get relative time helper
+function getRelativeTime(timestamp) {
+    if (!timestamp) return "N/A";
+    
+    const now = Date.now() / 1000;
+    const diffSeconds = now - parseInt(timestamp);
+    
+    if (diffSeconds < 60) return "Just now";
+    if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)} minutes ago`;
+    if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)} hours ago`;
+    if (diffSeconds < 604800) return `${Math.floor(diffSeconds / 86400)} days ago`;
+    if (diffSeconds < 2629746) return `${Math.floor(diffSeconds / 604800)} weeks ago`;
+    if (diffSeconds < 31556952) return `${Math.floor(diffSeconds / 2629746)} months ago`;
+    
+    return `${Math.floor(diffSeconds / 31556952)} years ago`;
+}
+
 // Quick commands for specific Last.fm features (can be added to commands.mjs)
 
 // Command for top artists with default period
@@ -24,14 +41,16 @@ export async function handleTopArtistsCommand(ctx, userId, period = '7day') {
             return ctx.reply(`❌ ${result.error}`);
         }
 
-        const { artists, username } = result.data;
+        const { artists, username, total } = result.data;
         const displayName = userData?.tgUser || username;
         let message = `🎤 <b><a href="https://www.last.fm/user/${encodeURIComponent(username)}">${escapeHTML(displayName)}</a>'s Top Artists</b> (${formatPeriod(period)})\n\n`;
         
         artists.forEach((artist, index) => {
             const playcount = formatNumber(parseInt(artist.playcount));
-            message += `<b>${index + 1}.</b> ${escapeHTML(artist.name)} - ${playcount} plays\n`;
+            message += `<b>${index + 1}.</b> <a href="${artist.url}">${escapeHTML(artist.name)}</a> - ${playcount} plays\n`;
         });
+        
+        message += `\n📊 Total Artists: ${formatNumber(total)}`;
 
         await ctx.reply(message, { 
             parse_mode: 'HTML',
@@ -52,15 +71,17 @@ export async function handleTopTracksCommand(ctx, userId, period = '7day') {
             return ctx.reply(`❌ ${result.error}`);
         }
 
-        const { tracks, username } = result.data;
+        const { tracks, username, total } = result.data;
         const displayName = userData?.tgUser || username;
         let message = `🎵 <b><a href="https://www.last.fm/user/${encodeURIComponent(username)}">${escapeHTML(displayName)}</a>'s Top Tracks</b> (${formatPeriod(period)})\n\n`;
         
         tracks.forEach((track, index) => {
             const playcount = formatNumber(parseInt(track.playcount));
             const artistName = track.artist?.name || track.artist?.['#text'] || 'Unknown Artist';
-            message += `<b>${index + 1}.</b> ${escapeHTML(track.name)} by ${escapeHTML(artistName)} - ${playcount} plays\n`;
+            message += `<b>${index + 1}.</b> <a href="${track.url}">${escapeHTML(track.name)}</a> by ${escapeHTML(artistName)} - ${playcount} plays\n`;
         });
+        
+        message += `\n📊 Total Tracks: ${formatNumber(total)}`;
 
         await ctx.reply(message, { 
             parse_mode: 'HTML',
@@ -81,18 +102,20 @@ export async function handleRecentTracksCommand(ctx, userId) {
             return ctx.reply(`❌ ${result.error}`);
         }
 
-        const { tracks, username } = result.data;
+        const { tracks, username, total } = result.data;
         const displayName = userData?.tgUser || username;
         let message = `🕒 <b><a href="https://www.last.fm/user/${encodeURIComponent(username)}">${escapeHTML(displayName)}</a>'s Recent Tracks</b>\n\n`;
         
         tracks.forEach((track, index) => {
             const artistName = track.artist?.name || track.artist?.['#text'] || 'Unknown Artist';
             const isNowPlaying = track['@attr']?.nowplaying === 'true';
-            const status = isNowPlaying ? '🔴 Now Playing' : '⏸️ Recently played';
+            const timePrefix = isNowPlaying ? '🔴 Now Playing' : `⏰ ${getRelativeTime(track.date?.uts)}`;
             
-            message += `<b>${index + 1}.</b> ${escapeHTML(track.name)} by ${escapeHTML(artistName)}\n`;
-            message += `   ${status}\n\n`;
+            message += `<b>${index + 1}.</b> <a href="${track.url}">${escapeHTML(track.name)}</a> by ${escapeHTML(artistName)}\n`;
+            message += `   ${timePrefix}\n\n`;
         });
+        
+        message += `📊 Total Scrobbles: ${formatNumber(total)}`;
 
         await ctx.reply(message, { 
             parse_mode: 'HTML',
@@ -201,7 +224,14 @@ export async function handleLovedTracksCommand(ctx, userId) {
         
         tracks.forEach((track, index) => {
             const artistName = track.artist?.name || track.artist?.['#text'] || 'Unknown Artist';
-            message += `<b>${index + 1}.</b> ${escapeHTML(track.name)} by ${escapeHTML(artistName)}\n`;
+            const lovedDate = track.date ? getRelativeTime(track.date.uts) : '';
+            
+            message += `<b>${index + 1}.</b> <a href="${track.url}">${escapeHTML(track.name)}</a> by ${escapeHTML(artistName)}\n`;
+            if (lovedDate) {
+                message += `   ❤️ Loved ${lovedDate}\n\n`;
+            } else {
+                message += '\n';
+            }
         });
 
         message += `\n📊 Total Loved: ${formatNumber(total)}`;
