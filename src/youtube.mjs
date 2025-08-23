@@ -31,19 +31,29 @@ async function getYouTubeMusicDetails(artist, track) {
         
         const firstResult = data.results[0];
         
-        if (firstResult.thumbnails && firstResult.thumbnails.length > 0) {
-            const modifiedThumbnailUrl = firstResult.thumbnails[0].url.replace(/w60-h60/, 'w1080-h1080');
+        // Use the enhanced thumbnail if available, otherwise fall back to processing thumbnails array
+        let albumCover = firstResult.thumbnail;
+        
+        if (!albumCover && firstResult.thumbnails && firstResult.thumbnails.length > 0) {
+            // Sort thumbnails by size to get the best quality
+            const sortedThumbnails = firstResult.thumbnails.sort((a, b) => 
+                (b.width * b.height) - (a.width * a.height)
+            );
             
-            return {
-                id: firstResult.videoId,
-                albumCover: modifiedThumbnailUrl,
-            };
-        } else {
-            return {
-                id: firstResult.videoId,
-                albumCover: null,
-            };
+            const bestThumbnail = sortedThumbnails[0];
+            albumCover = bestThumbnail.url
+                .replace(/w\d+-h\d+/, 'w1080-h1080')
+                .replace(/mqdefault/, 'maxresdefault')
+                .replace(/hqdefault/, 'maxresdefault');
         }
+        
+        return {
+            id: firstResult.videoId,
+            albumCover: albumCover,
+            title: firstResult.title || null,
+            artists: firstResult.artists || [],
+            album: firstResult.album || null
+        };
     } catch (error) {
         console.error('YouTube Music API error:', error);
         return null;
