@@ -9,19 +9,79 @@ dotenv.config();
 const execAsync = promisify(exec);
 
 async function getYouTubeMusicDetails(artist, track) {
-    // Sanitize inputs to prevent command injection
-    const sanitizedArtist = artist.replace(/[^\w\s]/g, '').replace(/'/g, "\\'");
-    const sanitizedTrack = track.replace(/[^\w\s]/g, '').replace(/'/g, "\\'");
-    const searchString = `${sanitizedArtist} ${sanitizedTrack}`;
+    // Improved sanitization that preserves Unicode characters
+    // Only remove dangerous characters that could cause command injection
+    const sanitizeForCommand = (str) => {
+        if (!str) return '';
+        // Remove only dangerous shell characters, preserve Unicode
+        return str.replace(/[`$;|&<>(){}[\]\\]/g, '')
+                 .replace(/"/g, '\\"')
+                 .trim();
+    };
+    
+    const sanitizedArtist = sanitizeForCommand(artist);
+    const sanitizedTrack = sanitizeForCommand(track);
+    const searchString = `${sanitizedArtist} ${sanitizedTrack}`.trim();
+    
+    // Early validation to prevent empty queries
+    // Use a more lenient check for Unicode - single meaningful characters should be allowed
+    if (!searchString || searchString.trim().length < 1) {
+        console.log('Search query too short or empty:', searchString);
+        return null;
+    }
     
     try {
         const scriptPath = path.join(process.cwd(), 'src/ytmusic', 'api.py');
-        const { stdout } = await execAsync(`python3 "${scriptPath}" "${searchString}"`);
+        
+        // Use spawn instead of exec for better handling of Unicode arguments
+        const { spawn } = await import('child_process');
+        const { promisify } = await import('util');
+        
+        // Create a promise-based wrapper for spawn
+        const spawnAsync = () => {
+            return new Promise((resolve, reject) => {
+                const pythonProcess = spawn('python3', [scriptPath, searchString], {
+                    stdio: ['pipe', 'pipe', 'pipe'],
+                    encoding: 'utf8'
+                });
+                
+                let stdout = '';
+                let stderr = '';
+                
+                pythonProcess.stdout.on('data', (data) => {
+                    stdout += data.toString('utf8');
+                });
+                
+                pythonProcess.stderr.on('data', (data) => {
+                    stderr += data.toString('utf8');
+                });
+                
+                pythonProcess.on('close', (code) => {
+                    if (code === 0) {
+                        resolve({ stdout, stderr });
+                    } else {
+                        const error = new Error(`Process exited with code ${code}`);
+                        error.code = code;
+                        error.stdout = stdout;
+                        error.stderr = stderr;
+                        reject(error);
+                    }
+                });
+                
+                pythonProcess.on('error', (error) => {
+                    reject(error);
+                });
+            });
+        };
+        
+        const { stdout } = await spawnAsync();
         
         const data = JSON.parse(stdout);
         
+        // Handle error responses gracefully
         if (data.error) {
-            throw new Error(data.error);
+            console.log('YouTube Music API returned error:', data.error);
+            return null;
         }
         
         if (!data.results || data.results.length === 0) {
@@ -55,7 +115,20 @@ async function getYouTubeMusicDetails(artist, track) {
             album: firstResult.album || null
         };
     } catch (error) {
-        console.error('YouTube Music API error:', error);
+        // Enhanced error handling for different types of errors
+        if (error.code === 'ENOENT') {
+            console.error('Python3 or script not found:', error.message);
+        } else if (error.stdout) {
+            // Try to parse error response from Python script
+            try {
+                const errorData = JSON.parse(error.stdout);
+                console.log('YouTube Music API returned error:', errorData.error);
+            } catch (parseError) {
+                console.error('YouTube Music API error (unparseable):', error.stdout);
+            }
+        } else {
+            console.error('YouTube Music API error:', error.message);
+        }
         return null;
     }
 }

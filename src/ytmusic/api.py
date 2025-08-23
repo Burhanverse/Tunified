@@ -38,9 +38,10 @@ class YTMusicSearcher:
             self.ytmusic = None
     
     def normalize_query(self, query: str) -> str:
-        """Normalize search query for better matching"""
-        # Remove special characters and extra spaces
-        query = re.sub(r'[^\w\s\-]', ' ', query)
+        """Normalize search query for better matching while preserving Unicode"""
+        # Preserve Unicode letters, numbers, spaces, hyphens and common punctuation
+        # Includes: Latin, Cyrillic, Arabic, Chinese/Japanese/Korean, and other scripts
+        query = re.sub(r'[^\w\s\-\u00C0-\u017F\u0400-\u04FF\u0600-\u06FF\u4E00-\u9FFF\u3040-\u309F\u30A0-\u30FF\uAC00-\uD7AF]', ' ', query, flags=re.UNICODE)
         # Remove multiple spaces
         query = re.sub(r'\s+', ' ', query).strip()
         return query
@@ -214,24 +215,37 @@ def search_ytmusic(query: str) -> Dict[str, Any]:
     return result
 
 if __name__ == "__main__":
+    # Ensure proper Unicode handling
+    import locale
+    locale.setlocale(locale.LC_ALL, '')
+    
     if len(sys.argv) < 2:
         error_response = {"error": "No search query provided", "usage": "python api.py '<search_query>'"}
-        print(json.dumps(error_response))
-        sys.exit(1)
+        print(json.dumps(error_response, ensure_ascii=False))
+        sys.exit(0)  # Changed to 0 to prevent Node.js from throwing
     
-    # Handle multiple arguments as a single query
-    query = " ".join(sys.argv[1:]) if len(sys.argv) > 2 else sys.argv[1]
+    # Handle multiple arguments as a single query with proper Unicode handling
+    try:
+        query = " ".join(sys.argv[1:]) if len(sys.argv) > 2 else sys.argv[1]
+        # Ensure query is properly decoded
+        if isinstance(query, bytes):
+            query = query.decode('utf-8')
+    except UnicodeDecodeError as e:
+        error_response = {"error": f"Unicode decode error: {str(e)}"}
+        print(json.dumps(error_response, ensure_ascii=False))
+        sys.exit(0)
     
-    # Validate query length
-    if len(query.strip()) < 2:
-        error_response = {"error": "Search query too short (minimum 2 characters)"}
-        print(json.dumps(error_response))
-        sys.exit(1)
+    # Validate query length (using character count, not byte count)
+    if len(query.strip()) < 1 or not query.strip():  # Allow single characters but not empty
+        error_response = {"error": "Search query is empty"}
+        print(json.dumps(error_response, ensure_ascii=False))
+        sys.exit(0)
     
     try:
         result = search_ytmusic(query.strip())
         print(json.dumps(result, ensure_ascii=False))
+        sys.exit(0)
     except Exception as e:
         error_response = {"error": f"Unexpected error: {str(e)}"}
-        print(json.dumps(error_response))
-        sys.exit(1)
+        print(json.dumps(error_response, ensure_ascii=False))
+        sys.exit(0)
