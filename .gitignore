@@ -3,6 +3,7 @@ node_modules/
 .codebuddy/
 .idea/
 venv/
+planned/
 src/oauth.json
 .env
 *.zip

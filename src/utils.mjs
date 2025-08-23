@@ -1,52 +1,52 @@
-import { MongoClient } from 'mongodb';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import { InlineKeyboard } from 'grammy';
 
 dotenv.config();
 
 const lastfmApiKey = process.env.LASTFM_API_KEY;
-let dbClient;
-const databaseName = 'TunifiedDB';
-const usersCollection = 'users';
-let db;
-let isConnected = false;
+
+// Define User Schema
+const userSchema = new mongoose.Schema({
+    userId: { type: String, required: true, unique: true },
+    channelId: String,
+    tgUser: String,
+    lastfmUsername: String,
+    lastMessageId: String,
+    status: String,
+    lastListenedTime: Date
+}, { timestamps: true });
+
+// Create User Model
+const User = mongoose.model('User', userSchema);
 
 async function connectDB(forceReconnect = false) {
-    if (!isConnected) {
-        try {
-            dbClient = new MongoClient(process.env.MONGO_URI);
-            await dbClient.connect();
-            if (forceReconnect) await dbClient.db().command({ ping: 1 });
-            db = dbClient.db(databaseName);
-            isConnected = true;
-            console.log("Connected to MongoDB");
-        } catch (error) {
-            console.error("Error connecting to MongoDB:", error);
+    try {
+        if (mongoose.connection.readyState === 0 || forceReconnect) {
+            await mongoose.connect(process.env.MONGO_URI, {
+                dbName: 'TunifiedDB'
+            });
+            console.log("Connected to MongoDB via Mongoose");
         }
+    } catch (error) {
+        console.error("Error connecting to MongoDB:", error);
+        throw error;
     }
 }
 
 async function initializeDatabase() {
     await connectDB();
-    if (!isConnected) try {
-        console.log("Initializing database...");
-        await db.createCollection(usersCollection);
-        console.log("Users collection created successfully");
-    } catch (error) {
-        if (error.code !== 48) {
-            console.error("Error creating users collection:", error);
-        }
-    }
+    console.log("Database initialized with Mongoose");
 }
 
 async function saveUserData(userId, data) {
     try {
-        if (!isConnected) await connectDB(true);
-        const collection = db.collection(usersCollection);
-        await collection.updateOne(
+        if (mongoose.connection.readyState === 0) await connectDB(true);
+        
+        await User.findOneAndUpdate(
             { userId },
             { $set: data },
-            { upsert: true }
+            { upsert: true, new: true }
         );
         console.log(`User data saved for userId: ${userId}`);
     } catch (error) {
@@ -56,9 +56,8 @@ async function saveUserData(userId, data) {
 
 async function getUserData() {
     try {
-        if (!isConnected) await connectDB(true);
-        const collection = db.collection(usersCollection);
-        return await collection.find().toArray();
+        if (mongoose.connection.readyState === 0) await connectDB(true);
+        return await User.find({}).lean();
     } catch (error) {
         console.error("Error fetching all user data:", error);
         return null;
@@ -67,10 +66,8 @@ async function getUserData() {
 
 async function getIndividualUserData(userId) {
     try {
-        const users = await getUserData();
-        if (!users || !Array.isArray(users)) return null;
-
-        return users.find(user => user.userId === userId) || null;
+        if (mongoose.connection.readyState === 0) await connectDB(true);
+        return await User.findOne({ userId }).lean();
     } catch (error) {
         console.error('Error in getIndividualUserData:', error);
         return null;
@@ -79,9 +76,8 @@ async function getIndividualUserData(userId) {
 
 async function fetchNowPlaying(userId) {
     try {
-        if (!isConnected) await connectDB(true);
-        const collection = db.collection(usersCollection);
-        const userData = await collection.findOne({ userId });
+        if (mongoose.connection.readyState === 0) await connectDB(true);
+        const userData = await User.findOne({ userId });
 
         if (!userData || !userData.lastfmUsername) {
             throw new Error("Last.fm username not set for user.");
@@ -129,12 +125,20 @@ async function fetchNowPlaying(userId) {
 
             if (currentStatus === 'Paused' && previousStatus === 'Playing') {
                 lastListenedTime = new Date();
-                await saveUserData(userId, {
-                    lastListenedTime: lastListenedTime.toISOString(),
-                    status: currentStatus,
-                });
+                await User.findOneAndUpdate(
+                    { userId },
+                    { 
+                        lastListenedTime: lastListenedTime,
+                        status: currentStatus 
+                    },
+                    { new: true }
+                );
             } else if (currentStatus !== previousStatus) {
-                await saveUserData(userId, { status: currentStatus });
+                await User.findOneAndUpdate(
+                    { userId },
+                    { status: currentStatus },
+                    { new: true }
+                );
             }
 
             return {
