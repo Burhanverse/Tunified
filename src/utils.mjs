@@ -23,19 +23,81 @@ const User = mongoose.model('User', userSchema);
 async function connectDB(forceReconnect = false) {
     try {
         if (mongoose.connection.readyState === 0 || forceReconnect) {
-            await mongoose.connect(process.env.MONGO_URI, {
-                dbName: 'TunifiedDB'
-            });
+            // Parse the MongoDB URI to check if it's Atlas
+            const mongoUri = process.env.MONGO_URI;
+            const isAtlas = mongoUri && mongoUri.includes('mongodb+srv://');
+            
+            const connectionOptions = {
+                dbName: 'TunifiedDB',
+                serverSelectionTimeoutMS: 30000,
+                connectTimeoutMS: 30000,
+                socketTimeoutMS: 30000,
+                family: 4, // Use IPv4, skip trying IPv6
+                retryWrites: true,
+                retryReads: true,
+                maxPoolSize: 10,
+                minPoolSize: 2,
+                maxIdleTimeMS: 30000,
+                heartbeatFrequencyMS: 10000
+            };
+            
+            // Add SSL options for Atlas connections
+            if (isAtlas) {
+                connectionOptions.ssl = true;
+                connectionOptions.authSource = 'admin';
+            }
+            
+            await mongoose.connect(mongoUri, connectionOptions);
             console.log("Connected to MongoDB via Mongoose");
         }
     } catch (error) {
         console.error("Error connecting to MongoDB:", error);
+        
+        // If SSL error, try with minimal options
+        if (error.message.includes('SSL') || error.message.includes('TLS')) {
+            console.log("Retrying with minimal SSL settings...");
+            try {
+                const minimalOptions = {
+                    dbName: 'TunifiedDB',
+                    serverSelectionTimeoutMS: 30000,
+                    ssl: true
+                };
+                
+                await mongoose.connect(process.env.MONGO_URI, minimalOptions);
+                console.log("Connected to MongoDB with minimal SSL settings");
+                return;
+            } catch (fallbackError) {
+                console.error("Fallback connection also failed:", fallbackError);
+            }
+        }
+        
         throw error;
     }
 }
 
 async function initializeDatabase() {
     await connectDB();
+    
+    // Add connection event listeners
+    mongoose.connection.on('connected', () => {
+        console.log('Mongoose connected to MongoDB');
+    });
+    
+    mongoose.connection.on('error', (err) => {
+        console.error('Mongoose connection error:', err);
+    });
+    
+    mongoose.connection.on('disconnected', () => {
+        console.log('Mongoose disconnected from MongoDB');
+    });
+    
+    // Handle process termination
+    process.on('SIGINT', async () => {
+        await mongoose.connection.close();
+        console.log('Mongoose connection closed due to app termination');
+        process.exit(0);
+    });
+    
     console.log("Database initialized with Mongoose");
 }
 
@@ -54,13 +116,40 @@ async function saveUserData(userId, data) {
     }
 }
 
-async function getUserData() {
+async function getUserData(retryCount = 0) {
     try {
         if (mongoose.connection.readyState === 0) await connectDB(true);
-        return await User.find({}).lean();
+        
+        // Check if connection is ready
+        if (mongoose.connection.readyState !== 1) {
+            throw new Error('MongoDB connection not ready');
+        }
+        
+        const users = await User.find({}).lean();
+        
+        // Ensure we return an array
+        if (!users) {
+            console.log("No users found in database");
+            return [];
+        }
+        
+        if (!Array.isArray(users)) {
+            console.warn("Users data is not an array, converting...");
+            return Array.isArray(users) ? users : [users];
+        }
+        
+        return users;
     } catch (error) {
         console.error("Error fetching all user data:", error);
-        return null;
+        
+        // Retry logic for connection issues
+        if (retryCount < 3 && (error.name === 'MongoServerSelectionError' || error.name === 'MongoNetworkError')) {
+            console.log(`Retrying getUserData... Attempt ${retryCount + 1}/3`);
+            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+            return getUserData(retryCount + 1);
+        }
+        
+        return [];
     }
 }
 
