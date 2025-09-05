@@ -6,7 +6,6 @@ dotenv.config();
 
 const lastfmApiKey = process.env.LASTFM_API_KEY;
 
-// Define User Schema
 const userSchema = new mongoose.Schema({
     userId: { type: String, required: true, unique: true },
     channelId: String,
@@ -17,13 +16,11 @@ const userSchema = new mongoose.Schema({
     lastListenedTime: Date
 }, { timestamps: true });
 
-// Create User Model
 const User = mongoose.model('User', userSchema);
 
 async function connectDB(forceReconnect = false) {
     try {
         if (mongoose.connection.readyState === 0 || forceReconnect) {
-            // Parse the MongoDB URI to check if it's Atlas
             const mongoUri = process.env.MONGO_URI;
             const isAtlas = mongoUri && mongoUri.includes('mongodb+srv://');
             
@@ -32,7 +29,7 @@ async function connectDB(forceReconnect = false) {
                 serverSelectionTimeoutMS: 30000,
                 connectTimeoutMS: 30000,
                 socketTimeoutMS: 30000,
-                family: 4, // Use IPv4, skip trying IPv6
+                family: 4,
                 retryWrites: true,
                 retryReads: true,
                 maxPoolSize: 10,
@@ -41,7 +38,6 @@ async function connectDB(forceReconnect = false) {
                 heartbeatFrequencyMS: 10000
             };
             
-            // Add SSL options for Atlas connections
             if (isAtlas) {
                 connectionOptions.ssl = true;
                 connectionOptions.authSource = 'admin';
@@ -53,7 +49,6 @@ async function connectDB(forceReconnect = false) {
     } catch (error) {
         console.error("Error connecting to MongoDB:", error);
         
-        // If SSL error, try with minimal options
         if (error.message.includes('SSL') || error.message.includes('TLS')) {
             console.log("Retrying with minimal SSL settings...");
             try {
@@ -78,7 +73,6 @@ async function connectDB(forceReconnect = false) {
 async function initializeDatabase() {
     await connectDB();
     
-    // Add connection event listeners
     mongoose.connection.on('connected', () => {
         console.log('Mongoose connected to MongoDB');
     });
@@ -91,7 +85,6 @@ async function initializeDatabase() {
         console.log('Mongoose disconnected from MongoDB');
     });
     
-    // Handle process termination
     process.on('SIGINT', async () => {
         await mongoose.connection.close();
         console.log('Mongoose connection closed due to app termination');
@@ -120,14 +113,12 @@ async function getUserData(retryCount = 0) {
     try {
         if (mongoose.connection.readyState === 0) await connectDB(true);
         
-        // Check if connection is ready
         if (mongoose.connection.readyState !== 1) {
             throw new Error('MongoDB connection not ready');
         }
         
         const users = await User.find({}).lean();
         
-        // Ensure we return an array
         if (!users) {
             console.log("No users found in database");
             return [];
@@ -142,7 +133,6 @@ async function getUserData(retryCount = 0) {
     } catch (error) {
         console.error("Error fetching all user data:", error);
         
-        // Retry logic for connection issues
         if (retryCount < 3 && (error.name === 'MongoServerSelectionError' || error.name === 'MongoNetworkError')) {
             console.log(`Retrying getUserData... Attempt ${retryCount + 1}/3`);
             await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds

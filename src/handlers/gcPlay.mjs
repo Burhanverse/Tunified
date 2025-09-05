@@ -13,7 +13,7 @@ export async function getNowPlayingForUser(userId) {
             return { error: "Could not fetch current track information." };
         }
 
-        const details = await getYouTubeMusicDetails(track.artistName, track.trackName);
+        const details = await getYouTubeMusicDetails(track.artistName, track.trackName, track.albumName);
         if (!details) {
             return { error: "Could not fetch track details from YouTube Music." };
         }

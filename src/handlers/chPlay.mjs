@@ -11,7 +11,7 @@ export async function chPlaying(bot) {
         try {
             const track = await fetchNowPlaying(user.userId);
             if (track) {
-                let details = await getYouTubeMusicDetails(track.artistName, track.trackName);
+                let details = await getYouTubeMusicDetails(track.artistName, track.trackName, track.albumName);
 
                 if (!details) {
                     console.error('Could not fetch details from YouTube Music');

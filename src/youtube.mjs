@@ -8,12 +8,9 @@ dotenv.config();
 
 const execAsync = promisify(exec);
 
-async function getYouTubeMusicDetails(artist, track) {
-    // Improved sanitization that preserves Unicode characters
-    // Only remove dangerous characters that could cause command injection
+async function getYouTubeMusicDetails(artist, track, album = '') {
     const sanitizeForCommand = (str) => {
         if (!str) return '';
-        // Remove only dangerous shell characters, preserve Unicode
         return str.replace(/[`$;|&<>(){}[\]\\]/g, '')
                  .replace(/"/g, '\\"')
                  .trim();
@@ -21,23 +18,27 @@ async function getYouTubeMusicDetails(artist, track) {
     
     const sanitizedArtist = sanitizeForCommand(artist);
     const sanitizedTrack = sanitizeForCommand(track);
-    const searchString = `${sanitizedArtist} ${sanitizedTrack}`.trim();
+    const sanitizedAlbum = sanitizeForCommand(album);
     
-    // Early validation to prevent empty queries
-    // Use a more lenient check for Unicode - single meaningful characters should be allowed
+    let searchString = `${sanitizedTrack} ${sanitizedArtist}`.trim();
+    
+    if (sanitizedAlbum && sanitizedAlbum.length > 0) {
+        searchString += ` ${sanitizedAlbum}`;
+    }
+    
     if (!searchString || searchString.trim().length < 1) {
         console.log('Search query too short or empty:', searchString);
         return null;
     }
     
+    console.log('YouTube Music search query:', searchString);
+    
     try {
         const scriptPath = path.join(process.cwd(), 'src/ytmusic', 'api.py');
         
-        // Use spawn instead of exec for better handling of Unicode arguments
         const { spawn } = await import('child_process');
         const { promisify } = await import('util');
         
-        // Create a promise-based wrapper for spawn
         const spawnAsync = () => {
             return new Promise((resolve, reject) => {
                 const pythonProcess = spawn('python3', [scriptPath, searchString], {
@@ -78,7 +79,6 @@ async function getYouTubeMusicDetails(artist, track) {
         
         const data = JSON.parse(stdout);
         
-        // Handle error responses gracefully
         if (data.error) {
             console.log('YouTube Music API returned error:', data.error);
             return null;
@@ -91,11 +91,9 @@ async function getYouTubeMusicDetails(artist, track) {
         
         const firstResult = data.results[0];
         
-        // Use the enhanced thumbnail if available, otherwise fall back to processing thumbnails array
         let albumCover = firstResult.thumbnail;
         
         if (!albumCover && firstResult.thumbnails && firstResult.thumbnails.length > 0) {
-            // Sort thumbnails by size to get the best quality
             const sortedThumbnails = firstResult.thumbnails.sort((a, b) => 
                 (b.width * b.height) - (a.width * a.height)
             );
@@ -115,11 +113,9 @@ async function getYouTubeMusicDetails(artist, track) {
             album: firstResult.album || null
         };
     } catch (error) {
-        // Enhanced error handling for different types of errors
         if (error.code === 'ENOENT') {
             console.error('Python3 or script not found:', error.message);
         } else if (error.stdout) {
-            // Try to parse error response from Python script
             try {
                 const errorData = JSON.parse(error.stdout);
                 console.log('YouTube Music API returned error:', errorData.error);
