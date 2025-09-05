@@ -33,7 +33,7 @@ await bot.api.setMyCommands([
 userCommands(bot);
 
 function initialize() {
-    setInterval(() => chPlaying(bot), 5000);
+    setInterval(() => chPlaying(bot), 10000);
 }
 
 initialize();

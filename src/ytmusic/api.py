@@ -7,7 +7,7 @@ import re
 import logging
 from typing import Dict, List, Optional, Any
 
-logging.basicConfig(level=logging.WARNING)
+logging.basicConfig(level=logging.ERROR)  # Changed from WARNING to ERROR
 logger = logging.getLogger(__name__)
 
 class YTMusicSearcher:
@@ -66,9 +66,9 @@ class YTMusicSearcher:
         search_query = components['full_query']
         
         search_strategies = [
-            {'filter': 'songs', 'limit': 8},  
-            {'filter': 'videos', 'limit': 5},   
-            {'filter': None, 'limit': 3}          
+            {'filter': 'songs', 'limit': 5},
+            {'filter': 'videos', 'limit': 3},
+            {'filter': None, 'limit': 2}
         ]
         
         for strategy in search_strategies:
@@ -155,7 +155,6 @@ class YTMusicSearcher:
                 return {"error": "Query too short"}
             
             components = self.parse_search_components(query)
-            logger.info(f"Searching for: {components['full_query']}")
             
             results = self.search_with_fallbacks(query)
             
@@ -170,7 +169,7 @@ class YTMusicSearcher:
             scored_results.sort(key=lambda x: x[0], reverse=True)
             
             processed_results = []
-            for score, result in scored_results[:5]:
+            for score, result in scored_results[:3]:
                 try:
                     video_id = result.get('videoId')
                     if not video_id:

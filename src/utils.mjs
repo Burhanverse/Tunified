@@ -155,13 +155,16 @@ async function getIndividualUserData(userId) {
 
 async function fetchNowPlaying(userId) {
     try {
+        console.log(`Fetching now playing for user: ${userId}`);
         if (mongoose.connection.readyState === 0) await connectDB(true);
         const userData = await User.findOne({ userId });
 
         if (!userData || !userData.lastfmUsername) {
+            console.log(`No Last.fm username for user ${userId}`);
             throw new Error("Last.fm username not set for user.");
         }
 
+        console.log(`Fetching Last.fm data for: ${userData.lastfmUsername}`);
         const response = await fetch(
             `http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${userData.lastfmUsername}&api_key=${lastfmApiKey}&format=json`
         );
@@ -172,6 +175,7 @@ async function fetchNowPlaying(userId) {
             !data.recenttracks.track ||
             (Array.isArray(data.recenttracks.track) && data.recenttracks.track.length === 0)
         ) {
+            console.log(`No recent tracks for user ${userId}:`, data);
             throw new Error("No recent tracks available or unexpected API response.");
         }
 
@@ -235,6 +239,7 @@ async function fetchNowPlaying(userId) {
             };
         }
     } catch (error) {
+        console.error(`Error in fetchNowPlaying for user ${userId}:`, error.message);
         return null;
     }
 }

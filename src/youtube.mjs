@@ -31,7 +31,7 @@ async function getYouTubeMusicDetails(artist, track, album = '') {
         return null;
     }
     
-    console.log('YouTube Music search query:', searchString);
+    // Removed excessive logging for production use
     
     try {
         const scriptPath = path.join(process.cwd(), 'src/ytmusic', 'api.py');
@@ -43,11 +43,21 @@ async function getYouTubeMusicDetails(artist, track, album = '') {
             return new Promise((resolve, reject) => {
                 const pythonProcess = spawn('python3', [scriptPath, searchString], {
                     stdio: ['pipe', 'pipe', 'pipe'],
-                    encoding: 'utf8'
+                    encoding: 'utf8',
+                    timeout: 15000
                 });
                 
                 let stdout = '';
                 let stderr = '';
+                let finished = false;
+                
+                const timeoutId = setTimeout(() => {
+                    if (!finished) {
+                        finished = true;
+                        pythonProcess.kill('SIGKILL');
+                        reject(new Error('YouTube Music API timeout'));
+                    }
+                }, 15000);
                 
                 pythonProcess.stdout.on('data', (data) => {
                     stdout += data.toString('utf8');
@@ -58,6 +68,10 @@ async function getYouTubeMusicDetails(artist, track, album = '') {
                 });
                 
                 pythonProcess.on('close', (code) => {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(timeoutId);
+                    
                     if (code === 0) {
                         resolve({ stdout, stderr });
                     } else {
@@ -70,12 +84,20 @@ async function getYouTubeMusicDetails(artist, track, album = '') {
                 });
                 
                 pythonProcess.on('error', (error) => {
+                    if (finished) return;
+                    finished = true;
+                    clearTimeout(timeoutId);
                     reject(error);
                 });
             });
         };
         
         const { stdout } = await spawnAsync();
+        
+        if (!stdout || stdout.trim().length === 0) {
+            console.log('Empty response from YouTube Music API');
+            return null;
+        }
         
         const data = JSON.parse(stdout);
         
@@ -120,7 +142,7 @@ async function getYouTubeMusicDetails(artist, track, album = '') {
                 const errorData = JSON.parse(error.stdout);
                 console.log('YouTube Music API returned error:', errorData.error);
             } catch (parseError) {
-                console.error('YouTube Music API error (unparseable):', error.stdout);
+                console.error('YouTube Music API error (unparseable):', error.stdout?.slice(0, 100) || 'No output');
             }
         } else {
             console.error('YouTube Music API error:', error.message);

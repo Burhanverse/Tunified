@@ -14,7 +14,7 @@ export async function chPlaying(bot) {
                 let details = await getYouTubeMusicDetails(track.artistName, track.trackName, track.albumName);
 
                 if (!details) {
-                    console.error('Could not fetch details from YouTube Music');
+                    // Skip this iteration instead of logging every failure
                     continue;
                 }
 
