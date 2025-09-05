@@ -155,7 +155,6 @@ async function getIndividualUserData(userId) {
 
 async function fetchNowPlaying(userId) {
     try {
-        console.log(`Fetching now playing for user: ${userId}`);
         if (mongoose.connection.readyState === 0) await connectDB(true);
         const userData = await User.findOne({ userId });
 
@@ -164,7 +163,6 @@ async function fetchNowPlaying(userId) {
             throw new Error("Last.fm username not set for user.");
         }
 
-        console.log(`Fetching Last.fm data for: ${userData.lastfmUsername}`);
         const response = await fetch(
             `http://ws.audioscrobbler.com/2.0/?method=user.getrecenttracks&user=${userData.lastfmUsername}&api_key=${lastfmApiKey}&format=json`
         );
