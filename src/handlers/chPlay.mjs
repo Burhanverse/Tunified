@@ -47,7 +47,8 @@ export async function chPlaying(bot) {
             } catch (error) {
                 // Only log critical errors, suppress common Telegram API errors
                 if (!error.message.includes('chat not found') && 
-                    !error.message.includes('message to edit not found')) {
+                    !error.message.includes('message to edit not found') &&
+                    !error.message.includes('chat_id is empty')) {
                     console.error(`Error processing user ${user.userId}:`, error.message);
                 }
             }
