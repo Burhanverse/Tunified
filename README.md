@@ -42,33 +42,23 @@ Available at <a href="https://t.me/tunifiedxbot">TunifiedNXT</a>
     git clone https://github.com/Burhanverse/Tunified.git
     cd Tunified
 ```
-3\. Install dependencies:
-```bash
-    npm install --include=dev
-```
-4\. Create a `.env` file in the root directory and add the following environment variables:
+3\. Create a `.env` file in the root directory and add the following environment variables:
 ```env
 LASTFM_API_KEY=
 LASTFM_SHARED_SECRET=
 TELEGRAM_BOT_TOKEN=
 MONGO_URI=
 ```
-5\. Get your Last.FM API KEY & SHARED SECERT from [here](https://www.last.fm/api/account/create) remember to login with the same account you use for scrobbling tracks as this will serve as the main source for the bot to display the current playing track data.
+4\. Get your Last.FM API KEY & SHARED SECERT from [here](https://www.last.fm/api/account/create) remember to login with the same account you use for scrobbling tracks as this will serve as the main source for the bot to display the current playing track data.
 
-6\. Add the bot [@myidbot](https://t.me/myidbot) to your chat or channel → send the command `/getgroupid@myidbot` and follow the instructions in the bot.
+5\. Add the bot [@myidbot](https://t.me/myidbot) to your chat or channel → send the command `/getgroupid@myidbot` and follow the instructions in the bot.
 
-7\. To get `TELEGRAM_BOT_TOKEN`, go to chat with [@BotFather](https://t.me/BotFather) and send the command `/newbot`. Following the instructions. Upon completion, [@BotFather](https://t.me/BotFather) will give you the bot token. Don't forget to add the bot to your channel.
+6\. To get `TELEGRAM_BOT_TOKEN`, go to chat with [@BotFather](https://t.me/BotFather) and send the command `/newbot`. Following the instructions. Upon completion, [@BotFather](https://t.me/BotFather) will give you the bot token. Don't forget to add the bot to your channel.
 
-8\. Create a mongodb cluster for database.
+7\. Create a mongodb cluster for database.
 
-9\.Start the bot:
+8\.Start the bot:
 ```bash
-python3 -m venv venv
-```
-```bash
-source venv/bin/activate
-```
-```bash
-    npm start
+./start.sh
 ```
 ---
