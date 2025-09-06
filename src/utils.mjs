@@ -21,51 +21,24 @@ const User = mongoose.model('User', userSchema);
 async function connectDB(forceReconnect = false) {
     try {
         if (mongoose.connection.readyState === 0 || forceReconnect) {
+            if (forceReconnect && mongoose.connection.readyState !== 0) {
+                await mongoose.connection.close();
+            }
+            
             const mongoUri = process.env.MONGO_URI;
-            const isAtlas = mongoUri && mongoUri.includes('mongodb+srv://');
             
             const connectionOptions = {
                 dbName: 'TunifiedDB',
-                serverSelectionTimeoutMS: 30000,
-                connectTimeoutMS: 30000,
-                socketTimeoutMS: 30000,
-                family: 4,
-                retryWrites: true,
-                retryReads: true,
+                serverSelectionTimeoutMS: 10000,
+                connectTimeoutMS: 10000,
                 maxPoolSize: 10,
-                minPoolSize: 2,
-                maxIdleTimeMS: 30000,
-                heartbeatFrequencyMS: 10000
+                minPoolSize: 1
             };
             
-            if (isAtlas) {
-                connectionOptions.ssl = true;
-                connectionOptions.authSource = 'admin';
-            }
-            
             await mongoose.connect(mongoUri, connectionOptions);
-            console.log("Connected to MongoDB via Mongoose");
         }
     } catch (error) {
-        console.error("Error connecting to MongoDB:", error);
-        
-        if (error.message.includes('SSL') || error.message.includes('TLS')) {
-            console.log("Retrying with minimal SSL settings...");
-            try {
-                const minimalOptions = {
-                    dbName: 'TunifiedDB',
-                    serverSelectionTimeoutMS: 30000,
-                    ssl: true
-                };
-                
-                await mongoose.connect(process.env.MONGO_URI, minimalOptions);
-                console.log("Connected to MongoDB with minimal SSL settings");
-                return;
-            } catch (fallbackError) {
-                console.error("Fallback connection also failed:", fallbackError);
-            }
-        }
-        
+        console.error("Error connecting to MongoDB:", error.message);
         throw error;
     }
 }
@@ -111,16 +84,25 @@ async function saveUserData(userId, data) {
 
 async function getUserData(retryCount = 0) {
     try {
-        if (mongoose.connection.readyState === 0) await connectDB(true);
+        // Ensure we have a connection
+        if (mongoose.connection.readyState !== 1) {
+            await connectDB(true);
+        }
+        
+        // Wait a bit for connection to be ready
+        let waitTime = 0;
+        while (mongoose.connection.readyState !== 1 && waitTime < 5000) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+            waitTime += 100;
+        }
         
         if (mongoose.connection.readyState !== 1) {
-            throw new Error('MongoDB connection not ready');
+            throw new Error('MongoDB connection not ready after waiting');
         }
         
         const users = await User.find({}).lean();
         
         if (!users) {
-            console.log("No users found in database");
             return [];
         }
         
@@ -131,11 +113,15 @@ async function getUserData(retryCount = 0) {
         
         return users;
     } catch (error) {
-        console.error("Error fetching all user data:", error);
+        console.error("Error fetching all user data:", error.message);
         
-        if (retryCount < 3 && (error.name === 'MongoServerSelectionError' || error.name === 'MongoNetworkError')) {
-            console.log(`Retrying getUserData... Attempt ${retryCount + 1}/3`);
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+        if (retryCount < 3 && (
+            error.name === 'MongoServerSelectionError' || 
+            error.name === 'MongoNetworkError' ||
+            error.message.includes('connection not ready')
+        )) {
+            console.warn(`Retrying getUserData... Attempt ${retryCount + 1}/3`);
+            await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds
             return getUserData(retryCount + 1);
         }
         
@@ -155,11 +141,14 @@ async function getIndividualUserData(userId) {
 
 async function fetchNowPlaying(userId) {
     try {
-        if (mongoose.connection.readyState === 0) await connectDB(true);
+        // Ensure we have a database connection
+        if (mongoose.connection.readyState !== 1) {
+            await connectDB(true);
+        }
+        
         const userData = await User.findOne({ userId });
 
         if (!userData || !userData.lastfmUsername) {
-            console.log(`No Last.fm username for user ${userId}`);
             throw new Error("Last.fm username not set for user.");
         }
 
@@ -173,7 +162,6 @@ async function fetchNowPlaying(userId) {
             !data.recenttracks.track ||
             (Array.isArray(data.recenttracks.track) && data.recenttracks.track.length === 0)
         ) {
-            console.log(`No recent tracks for user ${userId}:`, data);
             throw new Error("No recent tracks available or unexpected API response.");
         }
 
@@ -199,7 +187,7 @@ async function fetchNowPlaying(userId) {
             if (!trackInfoData.track) {
                 console.warn("No track info available from Last.fm API.");
             }
-            const playCount = trackInfoData.track.userplaycount || 'N/A';
+            const playCount = trackInfoData.track?.userplaycount || 'N/A';
 
             let lastListenedTime = userData.lastListenedTime ? new Date(userData.lastListenedTime) : null;
             const previousStatus = userData.status;

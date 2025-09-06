@@ -33,7 +33,10 @@ await bot.api.setMyCommands([
 userCommands(bot);
 
 function initialize() {
-    setInterval(() => chPlaying(bot), 10000);
+    // Add a small delay before starting the periodic function
+    setTimeout(() => {
+        setInterval(() => chPlaying(bot), 10000);
+    }, 5000); // Wait 5 seconds after bot initialization
 }
 
 initialize();
