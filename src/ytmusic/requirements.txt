@@ -1,2 +1,5 @@
 ytmusicapi
 requests
+flask
+waitress
+flask-cors
