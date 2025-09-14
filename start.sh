@@ -26,14 +26,19 @@ trap cleanup SIGINT SIGTERM
 
 echo "🎵 Starting Tunified Bot Services..."
 
-# Check if virtual environment exists
+# Try to create virtual environment if missing
 if [ ! -d "$VENV_PATH" ]; then
-    echo "📦 Creating virtual environment..."
-    python3 -m venv "$VENV_PATH" >/dev/null 2>&1
-    if [ $? -ne 0 ]; then
-        echo "❌ Failed to create virtual environment"
-        exit 1
+    echo "📦 Creating virtual environment (optional)..."
+    if ! python3 -m venv "$VENV_PATH" >/dev/null 2>&1; then
+        echo "⚠️  Failed to create virtual environment, continuing with system Python"
     fi
+fi
+
+# Try to activate virtual environment if it exists
+if [ -f "$VENV_PATH/bin/activate" ]; then
+    source "$VENV_PATH/bin/activate" || echo "⚠️  Failed to activate venv, using system Python"
+else
+    echo "⚠️  No virtual environment found, using system Python"
 fi
 
 # Activate virtual environment
