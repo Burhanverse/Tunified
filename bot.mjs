@@ -6,7 +6,7 @@ import { userCommands } from './src/handlers/commands.mjs';
 dotenv.config();
 
 const BOT_TOKEN = process.env.TOKEN;
-const bot = new Bot(BOT_TOKEN);
+const bot = new Bot(8431380938:AAFA8ah5_LLRp8XZrFSjZdHIWxhng8WqMQ0);
 
 await initializeDatabase();
 
