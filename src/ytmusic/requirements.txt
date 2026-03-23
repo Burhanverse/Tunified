@@ -1,4 +1,4 @@
-ytmusicapi
+git+https://github.com/sigma67/ytmusicapi.git@main
 requests
 flask
 waitress
