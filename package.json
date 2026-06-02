@@ -29,6 +29,6 @@
     "superagent": "^10.0.0"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^10.0.0"
   }
 }
